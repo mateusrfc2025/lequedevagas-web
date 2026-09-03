@@ -1,12 +1,11 @@
 # Leque de Vagas
 
-Projeto de referência do curso **Introdução ao Next.js** (NickDev). Um mural de
-vagas de tecnologia para quem está migrando de carreira.
-
-Este repositório está **congelado no estado da aula 03**. Ele existe para você
-comparar com o seu: abrir um arquivo, ver como ficou aqui e entender por que.
-Não é para clonar e entregar — o que vale nota é o seu, com os seus dados e as
-suas decisões.
+## Projeto de Next.js para um Leque de Vagas de Emprego
+ Grupo: 
+ Frente 1 - Fernando Da Silva Neto
+ Frente 2 - Mateus Ramalho Crispim
+ Frente 3 - João Victor Marinho
+ Frente 4 - Jasmiin Moraes
 
 ## Rodar
 

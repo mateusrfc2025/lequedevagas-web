@@ -42,37 +42,6 @@ de memória levam `"use client"`:
 | `components/MuralDeVagas.tsx` | estado no pai comum, filtro derivado |
 | `components/Filtros.tsx` | **nenhum** — recebe e avisa |
 
-Conte de novo: `app/vagas/page.tsx`, `app/vagas/[id]/page.tsx` e
-`app/empresas/[slug]/page.tsx`, e nenhuma delas leva `"use client"`.
-
-## O que NÃO tem, de propósito
-
-Se você achar que está faltando, provavelmente está — mas na aula seguinte.
-
-- **`fetch` e API.** Os dados moram em `data/vagas.ts` e `data/empresas.ts` e
-  são importados direto pelas páginas. Na aula 04 eles passam a vir de fora, e
-  aí aparece a **espera** — `async`, `revalidate`, `generateStaticParams`.
-- **Tailwind.** CSS comum até a aula 08.
-- **Autenticação de verdade.** O formulário de candidatura guarda o que você
-  digita só na memória da aba. Nada é enviado, nada é salvo. Aula 07.
-- **`generateStaticParams`.** É por isso que `/vagas/[id]` e
-  `/empresas/[slug]` aparecem como `ƒ` (dinâmico) na tabela do `build`, e não
-  como `○`. Também aula 04.
-
-## Detalhes que costumam pegar
-
-**`error.tsx` recebe `retry`, não `reset`.** O nome mudou no Next 16, e o
-antigo não existe mais — tutorial que mostra `reset` é de outra versão. Está em
-`app/vagas/[id]/error.tsx`.
-
-**`id` é texto.** O que vem da URL é sempre texto, então `id: "1"` e não
-`id: 1`. Comparar `"1" === 1` dá falso, e o `find` não acha nada.
-
-**`data/empresas.ts` e `data/vagas.ts` combinam na mão.** Todo `empresaSlug`
-tem que existir como `slug`, escrito igual. Quando desencontram, a listagem
-mostra a empresa e a página dela dá 404 — e o erro aparece longe de onde foi
-criado.
-
 ## Estrutura
 
 ```

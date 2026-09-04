@@ -1,9 +1,9 @@
 [
     {
-        "slug": "aurora=tech",
+        "slug": "aurora-tech",
         "nome": "Aurora Tech",
         "sobre": "Produto próprio na área de logística, 60 pessoas, sede no Recife e time distribuído pelo Nordeste inteiro. Contrata pessoas em início de carreira desde 2021 e mantém um programa de mentoria interna",
-        "site": "hhttps://aurora.exemplo.br"
+        "site": "https://aurora.exemplo.br"
     },
     {
         "slug": "nuvem-rosa",

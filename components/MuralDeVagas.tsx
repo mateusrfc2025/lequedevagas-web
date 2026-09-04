@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Filtros from "./Filtros";
 import CardDeVaga from "./CardDeVaga";
-import type { Vaga } from "@/data/vagas";
+import type { Vaga } from "@/lib/tipos";
 
 export default function MuralDeVagas({ vagas }: { vagas: Vaga[] }) {
   // O estado mora AQUI, no pai comum dos filtros e da lista. Dois

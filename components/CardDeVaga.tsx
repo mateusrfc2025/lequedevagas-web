@@ -1,6 +1,6 @@
 // FRENTE 1 · sem estado e SEM "use client". Ele só desenha o que recebe.
 import Link from "next/link";
-import type { Vaga } from "@/data/vagas";
+import type { Vaga } from "@/lib/tipos";
 
 export default function CardDeVaga({ vaga }: { vaga: Vaga }) {
   return (

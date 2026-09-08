@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import listarVagas from "@/lib/api";
+import { buscarVaga } from "@/lib/api";
 import BotaoCopiarLink from "@/components/BotaoCopiarLink";
 import DescricaoDaVaga from "@/components/DescricaoDaVaga";
 import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
@@ -14,8 +14,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const vagas = await listarVagas();
-  const vaga = vagas.find((v) => v.id === id);
+  const vaga = await buscarVaga(id);
   return {
     title: vaga ? `${vaga.titulo} · Leque de Vagas` : "Vaga não encontrada",
   };
@@ -31,9 +30,7 @@ export default async function PaginaDaVaga({
   // 2. await troca o vale pelo valor
   const { id } = await params;
   
-  const vagas = await listarVagas();
-  // 3. procura a vaga com esse id
-  const vaga = vagas.find((v) => v.id === id);
+  const vaga = await buscarVaga(id);
 
   // 4. não achou? para tudo e mostra o not-found.tsx desta pasta
   if (!vaga) notFound();

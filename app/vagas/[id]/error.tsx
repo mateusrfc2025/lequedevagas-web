@@ -5,17 +5,16 @@
    tutorial, era de uma versão que não é a nossa. */
 export default function ErroDaVaga({
   error,
-  retry,
+  reset,
 }: {
   error: Error & { digest?: string };
-  retry: () => void;
+  reset: () => void;
 }) {
   return (
     <div className="aviso">
-      <h2>Não consegui carregar esta vaga</h2>
-      <p>Pode ter sido instabilidade. Tente de novo.</p>
-      <p className="tecnico">{error.digest ?? error.message}</p>
-      <button type="button" onClick={() => retry()}>
+      <h2>Não foi possível carregar esta vaga</h2>
+      <p>Pode ter tido alguma instabilidade. Tente de novo por favor.</p>
+      <button type="button" onClick={() => reset()}>
         Tentar de novo
       </button>
     </div>

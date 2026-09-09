@@ -1,68 +1,20 @@
-// SEM "use client" — e é a página que usa MAIS componentes de cliente.
-import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import listarVagas from "@/lib/api";
-import BotaoCopiarLink from "@/components/BotaoCopiarLink";
-import DescricaoDaVaga from "@/components/DescricaoDaVaga";
-import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
+import { listarVagas, buscarVagaPorId } from "@/lib/api";
 
-// Faz o título da aba virar o nome da vaga.
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id } = await params;
+export async function generateStaticParams() {
   const vagas = await listarVagas();
-  const vaga = vagas.find((v) => v.id === id);
-  return {
-    title: vaga ? `${vaga.titulo} · Leque de Vagas` : "Vaga não encontrada",
-  };
+  return vagas.map((vaga) => ({
+    id: String(vaga.id),
+  }));
 }
 
-export default async function PaginaDaVaga({
-  // 1. a caixinha com os pedaços da URL chega aqui
-  params,
-}: {
-  // Promise = ela chega como um "vale", não pronta
-  params: Promise<{ id: string }>;
-}) {
-  // 2. await troca o vale pelo valor
+export default async function VagaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
-  const vagas = await listarVagas();
-  // 3. procura a vaga com esse id
-  const vaga = vagas.find((v) => v.id === id);
-
-  // 4. não achou? para tudo e mostra o not-found.tsx desta pasta
-  if (!vaga) notFound();
+  const vaga = await buscarVagaPorId(id);
 
   return (
-    <article className="vaga">
-      {/* Título e ficha vêm prontos do servidor. Não mudam depois. */}
-      <h1>{vaga.titulo}</h1>
-      <p>
-        <Link href={`/empresas/${vaga.empresaSlug}`}>{vaga.empresa}</Link>
-        {" · "}
-        {vaga.area} · {vaga.senioridade} · {vaga.local}
-      </p>
-
-      {vaga.aceitaIniciante && (
-        <p className="selo">Aceita quem está começando</p>
-      )}
-
-      {/* Daqui para baixo, componentes de cliente lado a lado. Cada um tem a
-          própria memória, e nenhum sabe do outro. */}
-      <BotaoCopiarLink titulo={vaga.titulo} />
-      <DescricaoDaVaga texto={vaga.descricao} />
-
-      <h2>Candidatar-se</h2>
-      <FormularioDeCandidatura tituloDaVaga={vaga.titulo} />
-
-      <p>
-        <Link href="/vagas">← todas as vagas</Link>
-      </p>
-    </article>
+    <main className="p-4">
+      <h1 className="text-xl font-bold">{vaga?.titulo}</h1>
+      <p>{vaga?.descricao}</p>
+    </main>
   );
 }

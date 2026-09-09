@@ -5,7 +5,7 @@
  Frente 1 - Fernando Da Silva Neto
  Frente 2 - Mateus Ramalho Crispim
  Frente 3 - João Victor Marinho
- Frente 4 - Jasmiin Moraes
+ Frente 4 - Jasmin Cleide M da Macena 
 
 ## Rodar
 

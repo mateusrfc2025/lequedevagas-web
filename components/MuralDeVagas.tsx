@@ -30,6 +30,7 @@ export default function MuralDeVagas({ vagas }: { vagas: Vaga[] }) {
 
   return (
     <section>
+    
       {/* O dado desce por prop (busca, area) e o aviso sobe por função. */}
       <Filtros
         busca={busca}

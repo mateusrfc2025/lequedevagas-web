@@ -15,3 +15,9 @@ export type Vaga = {
   /** No mínimo 300 caracteres: o "ver mais" precisa ter o que esconder. */
   descricao: string;
 };
+export type Empresa = {
+  slug: string;
+  nome: string;
+  sobre: string;
+  site: string;
+};

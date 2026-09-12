@@ -1,5 +1,8 @@
 import type { Vaga, Empresa } from "./tipos";
 
+// Armazenamento em memória para persistir as vagas durante o dev
+const vagasCriadasEmMemoria: Vaga[] = [];
+
 // 1. Listar Vagas
 export default async function listarVagas(): Promise<Vaga[]> {
   const resposta = await fetch(
@@ -13,11 +16,10 @@ export default async function listarVagas(): Promise<Vaga[]> {
     throw new Error("Falha ao buscar vagas");
   }
 
-  return resposta.json();
+  const vagasIniciais: Vaga[] = await resposta.json();
+  return [...vagasCriadasEmMemoria, ...vagasIniciais];
 }
 
-// Também permite importar como:
-// import { listarVagas } from "@/lib/api";
 export { listarVagas };
 
 // 2. Buscar Vaga por ID
@@ -25,7 +27,6 @@ export async function buscarVagaPorId(
   id: string
 ): Promise<Vaga | undefined> {
   const vagas = await listarVagas();
-
   return vagas.find((v) => String(v.id) === String(id));
 }
 
@@ -50,6 +51,11 @@ export async function buscarEmpresa(
   slug: string
 ): Promise<Empresa | undefined> {
   const empresas = await listarEmpresas();
-
   return empresas.find((e) => e.slug === slug);
+}
+
+// 5. Guardar Vaga (aceita o objeto da vaga criada)
+export async function guardarVaga(vaga: any) {
+  vagasCriadasEmMemoria.unshift(vaga);
+  return vaga;
 }

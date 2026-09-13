@@ -1,34 +1,10 @@
-import { criarVaga } from "./acoes";
+import FormularioDeVaga from "./formulario";
 
 export default function NovaVaga() {
   return (
-    <form action={criarVaga}>
-      <label>
-        Título
-        <input name="titulo" />
-      </label>
-
-      <label>
-        Empresa (slug)
-        <input name="empresaSlug" />
-      </label>
-
-      <label>
-        Local
-        <input name="local" />
-      </label>
-
-      <label>
-        <input type="checkbox" name="aceitaIniciante" />
-        Aceita iniciante
-      </label>
-
-      <label>
-        Vagas
-        <input type="number" name="vagas" />
-      </label>
-
-      <button>Publicar</button>
-    </form>
-  );
+    <section>
+      <h1>Publicar uma vaga</h1>
+      <FormularioDeVaga />
+    </section>
+      );
 }

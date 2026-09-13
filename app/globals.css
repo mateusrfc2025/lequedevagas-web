@@ -154,3 +154,12 @@ a { color: inherit; }
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.form label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.form input {
+  display: block;
+  margin-top: 0.25rem;
+}

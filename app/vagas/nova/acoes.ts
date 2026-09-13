@@ -4,9 +4,12 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { EsquemaDaVaga } from "@/lib/esquemas";
-import { guardarVaga } from "@/lib/api";
-
-export type Estado = { ok: boolean; erros: Record<string, string> };
+import { guardarVaga, buscarEmpresa } from "@/lib/api";
+import type { Estado } from "@/lib/tipos";
+// o estado esta sendo exportado daqui, era para ser importado de lib/tipos.ts?
+// e porCampo e valoresDe não estão sendo usados, então podem ser removidos?
+//import { porCampo, valoresDe } from "@/lib/formulario";
+//import type { Estado } from "@/lib/tipos";
 
 type ResultadoValidacao =
   | { ok: true; dados: z.infer<typeof EsquemaDaVaga> }
@@ -32,7 +35,10 @@ export async function criarVaga(
       const campo = String(problema.path[0] ?? "_");
       if (!erros[campo]) erros[campo] = problema.message;
     }
-    return { ok: false, erros };
+    return {
+  ok: false,
+  erros,
+  valores: Object.fromEntries(dados) as Record<string, string>,};
   }
 
   const vaga = {

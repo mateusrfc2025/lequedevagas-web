@@ -1,4 +1,11 @@
-import type { Vaga, Empresa } from "./tipos";
+import type { Vaga, Empresa, Candidatura } from "./tipos";
+// troquei o nome das variáveis para deixar mais 
+// claro que são listas de vagas, candidaturas e empresas 
+// criadas em memória, e não as listas originais que vêm do GitHub.
+//const criadas: Vaga[] = [];
+//const arquivadas = new Set<string>();
+//const candidaturas: Candidatura[] = [];
+//const editadas = new Map<string, Empresa>();
 
 const vagasCriadasEmMemoria: Vaga[] = [];
 const candidaturasCriadasEmMemoria: any[] = [];

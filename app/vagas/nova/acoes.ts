@@ -1,44 +1,36 @@
 "use server";
-
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { EsquemaDaVaga } from "@/lib/esquemas";
-import { guardarVaga } from "@/lib/api";
 
-export async function criarVaga(estadoAnterior: any, formData: FormData) {
-  if (!formData || typeof formData.get !== "function") {
-    return {
-      erros: { geral: ["Dados inválidos."] },
-      sucesso: false,
-    };
+export type Estado = { ok: boolean; erros: Record<string, string> };
+
+type ResultadoValidacao =
+  | { ok: true; dados: z.infer<typeof EsquemaDaVaga> }
+  | { ok: false; erros: z.ZodError };
+
+async function validarVaga(dados: FormData): Promise<ResultadoValidacao> {
+  const analise = EsquemaDaVaga.safeParse(Object.fromEntries(dados));
+  if (!analise.success) {
+    return { ok: false, erros: analise.error };
+  }
+  return { ok: true, dados: analise.data };
+}
+
+export async function criarVaga(
+  estadoAnterior: Estado,
+  dados: FormData,
+): Promise<Estado> {
+  const resultado = await validarVaga(dados);
+
+  if (!resultado.ok) {
+    const erros: Record<string, string> = {};
+    for (const problema of resultado.erros.issues) {
+      const campo = String(problema.path[0] ?? "_");
+      if (!erros[campo]) erros[campo] = problema.message;
+    }
+    return { ok: false, erros };
   }
 
-  const dadosBrutos = {
-    titulo: formData.get("titulo"),
-    empresaId: formData.get("empresaId"),
-    area: formData.get("area"),
-    senioridade: formData.get("senioridade"),
-    local: formData.get("local"),
-    aceitaIniciante: formData.get("aceitaIniciante") === "on",
-    descricao: formData.get("descricao"),
-  };
-
-  const validacao = EsquemaDaVaga.safeParse(dadosBrutos);
-
-  if (!validacao.success) {
-    return {
-      erros: validacao.error.flatten().fieldErrors,
-      sucesso: false,
-    };
-  }
-
-  const novaVaga = {
-    id: crypto.randomUUID(),
-    ...validacao.data,
-  };
-
-  await guardarVaga(novaVaga);
-
-  revalidatePath("/vagas");
-  redirect(`/vagas/${novaVaga.id}`);
+  console.log("Vaga válida:", resultado.dados);
+  return { ok: true, erros: {} };
 }

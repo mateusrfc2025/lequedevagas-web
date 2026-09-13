@@ -13,7 +13,7 @@ export default function MuralDeVagas({ vagas }: { vagas: Vaga[] }) {
 
   // Estado derivado: recalculado a cada renderização, nunca guardado.
   // new Set tira os repetidos; o espalhamento devolve array de novo.
-  const areas = ["Todas", ...new Set(vagas.map((v) => v.area))];
+  const areas = ["Todas", ...new Set(vagas.map((v) => v.area).filter(Boolean))];
 
   const visiveis = vagas.filter((vaga) => {
     const termo = busca.toLowerCase();

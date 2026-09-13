@@ -1,10 +1,17 @@
 "use client";
 import { useActionState } from "react";
-import { criarVaga, type Estado } from "./acoes";
+import { criarVaga } from "./acoes";
+import type { Estado } from "@/lib/tipos";
 import BotaoDeEnviar from "@/components/BotaoDeEnviar";
-const INICIAL: Estado = { ok: false, erros: {} };
+import { Empresa } from "@/lib/tipos";
 
-export default function FormularioDeVaga() {
+// nao estao sendo usados tambem
+//import { EstadoInicial } from "@/lib/tipos";
+//import type { Empresa } from "@/lib/tipos";
+
+const INICIAL: Estado = { ok: false, erros: {}, valores: {} };
+
+export default function FormularioDeVaga({ empresas }: { empresas: Empresa[] }) {
   const [estado, acaoDoForm, pendente] = useActionState(criarVaga, INICIAL);
 
   return (
@@ -17,7 +24,15 @@ export default function FormularioDeVaga() {
 
       <label>
         Empresa (slug)
-        <input name="empresaSlug" />
+                {/* <select>, e não campo de texto: assim ninguém digita um slug
+            que não existe. A validação do passo 2 da ação continua sendo
+            necessária — mas agora ela é a rede, não a porta. */}
+        <select name="empresaSlug" defaultValue={estado.valores.empresaSlug ?? ""}>
+          <option value="">Escolha…</option>
+          {empresas.map((e) => (
+            <option key={e.slug} value={e.slug}>{e.nome}</option>
+          ))}
+        </select>
       </label>
       {estado.erros.empresaSlug && <p className="erro">{estado.erros.empresaSlug}</p>}
 

@@ -1,6 +1,10 @@
 "use server";
 import { z } from "zod";
+import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { EsquemaDaVaga } from "@/lib/esquemas";
+import { guardarVaga } from "@/lib/api";
 
 export type Estado = { ok: boolean; erros: Record<string, string> };
 
@@ -31,6 +35,13 @@ export async function criarVaga(
     return { ok: false, erros };
   }
 
-  console.log("Vaga válida:", resultado.dados);
-  return { ok: true, erros: {} };
+  const vaga = {
+    id: randomUUID(),
+    ...resultado.dados,
+  };
+
+  await guardarVaga(vaga);
+  revalidatePath("/vagas");
+
+  redirect(`/vagas/${vaga.id}`);
 }

@@ -1,33 +1,26 @@
 "use client";
+
 import { useActionState } from "react";
 import { criarVaga } from "./acoes";
-import type { Estado } from "@/lib/tipos";
 import BotaoDeEnviar from "@/components/BotaoDeEnviar";
-import { Empresa } from "@/lib/tipos";
-
-// nao estao sendo usados tambem
-//import { EstadoInicial } from "@/lib/tipos";
-//import type { Empresa } from "@/lib/tipos";
-
-const INICIAL: Estado = { ok: false, erros: {}, valores: {} };
+import { EstadoInicial } from "@/lib/tipos";
+import type { Empresa } from "@/lib/tipos";
 
 export default function FormularioDeVaga({ empresas }: { empresas: Empresa[] }) {
-  const [estado, acaoDoForm, pendente] = useActionState(criarVaga, INICIAL);
+  const [estado, acaoDoForm] = useActionState(criarVaga, EstadoInicial);
+  const v = estado.valores;
 
   return (
     <form action={acaoDoForm} className="form">
       <label>
         Título
-        <input name="titulo" />
+        <input name="titulo" defaultValue={v.titulo} />
       </label>
       {estado.erros.titulo && <p className="erro">{estado.erros.titulo}</p>}
 
       <label>
-        Empresa (slug)
-                {/* <select>, e não campo de texto: assim ninguém digita um slug
-            que não existe. A validação do passo 2 da ação continua sendo
-            necessária — mas agora ela é a rede, não a porta. */}
-        <select name="empresaSlug" defaultValue={estado.valores.empresaSlug ?? ""}>
+        Empresa
+        <select name="empresaSlug" defaultValue={v.empresaSlug ?? ""}>
           <option value="">Escolha…</option>
           {empresas.map((e) => (
             <option key={e.slug} value={e.slug}>{e.nome}</option>
@@ -38,8 +31,8 @@ export default function FormularioDeVaga({ empresas }: { empresas: Empresa[] }) 
 
       <label>
         Área
-        <select name="area" defaultValue="">
-          <option value="" disabled>Selecione a área</option>
+        <select name="area" defaultValue={v.area ?? ""}>
+          <option value="">Selecione a área</option>
           <option value="Front-end">Front-end</option>
           <option value="Back-end">Back-end</option>
           <option value="Mobile">Mobile</option>
@@ -52,8 +45,8 @@ export default function FormularioDeVaga({ empresas }: { empresas: Empresa[] }) 
 
       <label>
         Senioridade
-        <select name="senioridade" defaultValue="">
-          <option value="" disabled>Selecione a senioridade</option>
+        <select name="senioridade" defaultValue={v.senioridade ?? ""}>
+          <option value="">Selecione a senioridade</option>
           <option value="Estágio">Estágio</option>
           <option value="Júnior">Júnior</option>
           <option value="Pleno">Pleno</option>
@@ -64,28 +57,26 @@ export default function FormularioDeVaga({ empresas }: { empresas: Empresa[] }) 
 
       <label>
         Local
-        <input name="local" />
+        <input name="local" defaultValue={v.local} />
       </label>
       {estado.erros.local && <p className="erro">{estado.erros.local}</p>}
 
       <label>
-        <input type="checkbox" name="aceitaIniciante" />
+        <input
+          type="checkbox"
+          name="aceitaIniciante"
+          defaultChecked={v.aceitaIniciante === "on"}
+        />
         Aceita iniciante
       </label>
 
       <label>
         Descrição da vaga
-        <textarea name="descricao" rows={5} />
+        <textarea name="descricao" rows={5} defaultValue={v.descricao} />
       </label>
       {estado.erros.descricao && <p className="erro">{estado.erros.descricao}</p>}
 
-      <label>
-        Vagas
-        <input type="number" name="vagas" />
-      </label>
-      {estado.erros.vagas && <p className="erro">{estado.erros.vagas}</p>}
-
-        <BotaoDeEnviar>Publicar</BotaoDeEnviar>
+      <BotaoDeEnviar>Publicar</BotaoDeEnviar>
     </form>
   );
 }

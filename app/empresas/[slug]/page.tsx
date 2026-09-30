@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import listarVagas from "@/lib/api";
 import { listarEmpresas, buscarEmpresa } from "@/lib/api";
 import AbasDaEmpresa from "@/components/AbasDaEmpresa";
+import Link from "next/link";
 
 export async function generateStaticParams() {
   const empresas = await listarEmpresas();
@@ -45,6 +46,9 @@ export default async function PaginaDaEmpresa({
         <a href={empresa.site} target="_blank" rel="noopener noreferrer">
           {empresa.site}
         </a>
+      </p>
+      <p>
+        <Link href={`/empresas/${slug}/editar`}>Editar perfil</Link>
       </p>
       <AbasDaEmpresa sobre={empresa.sobre} vagas={vagasDaEmpresa} />
     </article>

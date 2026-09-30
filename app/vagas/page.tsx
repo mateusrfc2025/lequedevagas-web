@@ -1,15 +1,28 @@
-import MuralDeVagas from "@/components/MuralDeVagas";
-import listarVagas from "@/lib/api";
+import { Suspense } from "react";
+import NumerosDoCatalogo from "@/components/NumerosDoCatalogo";
+import ListagemDeVagas from "@/components/ListagemDeVagas";
 
-export default async function Vagas() {
-  const vagas = await listarVagas();
-
+export default function Vagas() {
   return (
     <>
       <h1>Vagas</h1>
-      {/* A página busca o dado e entrega pronto. Quem cuida do que muda é o
-          mural — e só ele desce para o navegador. */}
-      <MuralDeVagas vagas={vagas} />
+
+      {/* fallback com a MESMA altura do bloco real, para a tela não pular */}
+      <Suspense fallback={<div className="skeleton" style={{ height: 24 }} />}>
+        <NumerosDoCatalogo />
+      </Suspense>
+
+      <Suspense
+        fallback={
+          <ul className="lista">
+            {[1, 2, 3, 4].map((n) => (
+              <li key={n} className="skeleton" />
+            ))}
+          </ul>
+        }
+      >
+        <ListagemDeVagas />
+      </Suspense>
     </>
   );
 }

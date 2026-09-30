@@ -7,14 +7,12 @@ import { EstadoInicial } from "@/lib/tipos";
 import type { Empresa } from "@/lib/tipos";
 
 export default function FormularioDaEmpresa({ empresa }: { empresa: Empresa }) {
-
+  // .bind prende o slug como primeiro argumento (não vira campo do form)
   const acaoComSlug = salvarEmpresa.bind(null, empresa.slug);
-
   const [estado, acaoDoForm] = useActionState(acaoComSlug, EstadoInicial);
 
   return (
     <form action={acaoDoForm} className="form">
-
       <label>
         Nome
         <input name="nome" defaultValue={estado.valores.nome ?? empresa.nome} />
@@ -23,14 +21,26 @@ export default function FormularioDaEmpresa({ empresa }: { empresa: Empresa }) {
 
       <label>
         Sobre
-        <textarea name="sobre" defaultValue={estado.valores.sobre ?? empresa.sobre} />
+        <textarea
+          name="sobre"
+          rows={5}
+          defaultValue={estado.valores.sobre ?? empresa.sobre}
+        />
       </label>
       {estado.erros.sobre && <p className="erro">{estado.erros.sobre}</p>}
+
+      <label>
+        Site
+        <input name="site" defaultValue={estado.valores.site ?? empresa.site} />
+      </label>
+      {estado.erros.site && <p className="erro">{estado.erros.site}</p>}
 
       <BotaoDeEnviar>Salvar</BotaoDeEnviar>
 
       {estado.mensagem && (
-        <p role="status" className={estado.ok ? "ok" : "erro"}>{estado.mensagem}</p>
+        <p role="status" className={estado.ok ? "ok" : "erro"}>
+          {estado.mensagem}
+        </p>
       )}
     </form>
   );

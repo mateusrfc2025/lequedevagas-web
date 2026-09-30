@@ -1,43 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState } from "react-dom";
+import { useState, useActionState } from "react";
 import BotaoDeEnviar from "./BotaoDeEnviar";
-import { enviarCandidatura } from "../lib/formulario";
+import { enviarCandidatura } from "@/app/vagas/[id]/acoes";
+import { EstadoInicial } from "@/lib/tipos";
 
 export default function FormularioDeCandidatura({
+  vagaId,
   tituloDaVaga,
 }: {
+  vagaId: string;
   tituloDaVaga: string;
 }) {
-  // Cinco memórias. Cada uma guarda uma coisa que o servidor não tem como
-  // saber: o que a pessoa digitou nesta aba, agora.
+  // Este pedacinho de estado continua: a lista de chips vive só na tela.
   const [rascunho, setRascunho] = useState("");
   const [habilidades, setHabilidades] = useState<string[]>([]);
-  const [estado, dispatch] = useFormState(enviarCandidatura, null);
+  const [estado, acaoDoForm] = useActionState(enviarCandidatura, EstadoInicial);
 
-  
   function adicionar() {
     const nova = rascunho.trim();
-    // vazio ou repetido: não faz nada, e não some com o que a pessoa digitou
     if (nova === "" || habilidades.includes(nova)) return;
-    setHabilidades([...habilidades, nova]); // lista NOVA, não push
+    setHabilidades([...habilidades, nova]);
     setRascunho("");
-
-    
   }
 
-  // Duas telas no mesmo arquivo. O "enviada" decide qual delas aparece.
-  if (estado?.ok) {
+  if (estado.ok) {
     return (
-      <div className="ok">
+      <div className="ok" role="status">
         <h3>Candidatura registrada ✓</h3>
         <p>
-          {estado.nome}, guardamos a sua candidatura para{" "}
-          <strong>{tituloDaVaga}</strong> com {habilidades.length}{" "}
-          habilidade(s).
+          {estado.valores.nome}, recebemos a sua candidatura para{" "}
+          <strong>{tituloDaVaga}</strong>.
         </p>
-        {/* Voltar é desligar este estado: os outros quatro continuam lá. */}
         <button type="button" onClick={() => window.location.reload()}>
           nova candidatura
         </button>
@@ -46,18 +40,22 @@ export default function FormularioDeCandidatura({
   }
 
   return (
-    <form className="formulario" action={dispatch}>
+    <form className="formulario" action={acaoDoForm}>
+      <input type="hidden" name="vagaId" value={vagaId} />
+
       <label>
         Nome
-        {/* value + onChange andam JUNTOS. Só o value prende o campo. */}
-        <input name ="nome" type="text" />
+        <input name="nome" type="text" defaultValue={estado.valores.nome} />
       </label>
+      {estado.erros.nome && <p className="erro">{estado.erros.nome}</p>}
 
       <label>
         E-mail
-        <input name="email" type="email"/>
+        <input name="email" type="email" defaultValue={estado.valores.email} />
       </label>
+      {estado.erros.email && <p className="erro">{estado.erros.email}</p>}
 
+      {/* SEM name: este campo é só o rascunho, não deve ser enviado */}
       <label>
         Habilidades
         <input
@@ -65,7 +63,6 @@ export default function FormularioDeCandidatura({
           onChange={(e) => setRascunho(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              // dentro de um form, Enter envia. Aqui ele adiciona.
               e.preventDefault();
               adicionar();
             }
@@ -75,6 +72,7 @@ export default function FormularioDeCandidatura({
       <button type="button" onClick={adicionar}>
         adicionar
       </button>
+      {estado.erros.habilidades && <p className="erro">{estado.erros.habilidades}</p>}
 
       <ul className="chips">
         {habilidades.map((h) => (
@@ -83,10 +81,7 @@ export default function FormularioDeCandidatura({
             <button
               type="button"
               aria-label={`remover ${h}`}
-              // filter também devolve lista NOVA. É o mesmo princípio.
-              onClick={() =>
-                setHabilidades(habilidades.filter((x) => x !== h))
-              }
+              onClick={() => setHabilidades(habilidades.filter((x) => x !== h))}
             >
               ×
             </button>
@@ -94,11 +89,12 @@ export default function FormularioDeCandidatura({
         ))}
       </ul>
 
+      {/* As habilidades viajam nestes campos escondidos (mesmo name) */}
       {habilidades.map((h) => (
         <input key={h} type="hidden" name="habilidades" value={h} />
       ))}
 
-      <BotaoDeEnviar> enviar candidatura </BotaoDeEnviar>
+      <BotaoDeEnviar>Enviar candidatura</BotaoDeEnviar>
     </form>
   );
 }

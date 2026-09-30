@@ -24,8 +24,9 @@ export async function salvarEmpresa(
     return { ok: false, erros: {}, valores, mensagem: "Empresa não encontrada." };
   }
 
-  guardarEmpresa(slug, analise.data);
-
+  await guardarEmpresa(slug, analise.data);
+  // DUAS rotas mostram este dado: o detalhe e a listagem. Revalidar só uma
+  // deixaria a outra com o nome velho.
   revalidatePath(`/empresas/${slug}`);
   revalidatePath("/empresas");
 

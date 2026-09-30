@@ -1,6 +1,7 @@
 import { buscarVagaPorId, listarVagas } from "@/lib/api";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
 
 type VagaPageProps = {
   params: Promise<{ id: string }>;
@@ -69,6 +70,9 @@ export default async function VagaPage({
         <h2>Descrição da vaga</h2>
         <p>{vaga.descricao}</p>
       </section>
+
+      <FormularioDeCandidatura tituloDaVaga={vaga.titulo} />
+
     </main>
   );
 }

@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import type { Empresa, Candidatura } from "./tipos";
+import type { Vaga, Empresa, Candidatura } from "./tipos";
 
 const FONTE =
   "https://raw.githubusercontent.com/mateusrfc2025/lequedevagas-web/refs/heads/main/dados";
@@ -7,18 +7,36 @@ const FONTE =
 const candidaturasCriadasEmMemoria: Candidatura[] = [];
 const empresasEditadasEmMemoria: Record<string, Partial<Empresa>> = {};
 
-export async function listarVagas() {
-  return await prisma.vaga.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
+// Vagas do JSON não existem no banco, então "arquivar" uma delas
+// é só esconder. Some quando o servidor reinicia.
+const vagasArquivadasEmMemoria = new Set<string>();
+
+// ─── LEITURA ───
+
+// As vagas que vêm do vagas.json
+export async function buscarVagasPublicadas(): Promise<Vaga[]> {
+  const resposta = await fetch(`${FONTE}/vagas.json`, {
+    next: { revalidate: 60, tags: ["vagas"] },
   });
+  if (!resposta.ok) throw new Error("Falha ao buscar vagas");
+  return resposta.json();
 }
 
-export async function buscarVagaPorId(id: string) {
-  return await prisma.vaga.findUnique({
-    where: { id },
+// Banco primeiro (as mais novas em cima), depois as do JSON
+export async function listarVagas(): Promise<Vaga[]> {
+  const criadas = await prisma.vaga.findMany({
+    orderBy: { createdAt: "desc" },
   });
+  const publicadas = await buscarVagasPublicadas();
+
+  return [...criadas, ...publicadas].filter(
+    (vaga) => !vagasArquivadasEmMemoria.has(String(vaga.id)),
+  );
+}
+
+export async function buscarVagaPorId(id: string): Promise<Vaga | undefined> {
+  const vagas = await listarVagas();
+  return vagas.find((v) => String(v.id) === String(id));
 }
 
 export async function listarEmpresas(): Promise<Empresa[]> {
@@ -49,7 +67,6 @@ export async function buscarEmpresa(
   slug: string,
 ): Promise<Empresa | undefined> {
   const empresas = await listarEmpresas();
-
   return empresas.find((e) => e.slug === slug);
 }
 
@@ -70,9 +87,16 @@ export async function guardarVaga(dados: any) {
 }
 
 export async function arquivarVaga(id: string) {
-  return await prisma.vaga.delete({
-    where: { id },
-  });
+  const noBanco = await prisma.vaga.findUnique({ where: { id } });
+
+  if (noBanco) {
+    await prisma.vaga.delete({ where: { id } });
+  } else {
+    // Veio do JSON: não dá pra apagar, só esconder
+    vagasArquivadasEmMemoria.add(String(id));
+  }
+
+  return { id, arquivada: true };
 }
 
 export async function guardarCandidatura(candidatura: Candidatura) {
@@ -88,6 +112,5 @@ export async function guardarEmpresa(
     ...empresasEditadasEmMemoria[slug],
     ...dados,
   };
-
   return { slug, ...dados };
 }

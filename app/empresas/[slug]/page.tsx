@@ -1,7 +1,7 @@
 // SEM "use client". É uma página de servidor, e continua sendo.
 import type { Metadata } from "next";
 import { notFound } from "next/navigation"
-import listarVagas from "@/lib/api";
+import { listarVagas } from "@/lib/api";
 import { listarEmpresas, buscarEmpresa } from "@/lib/api";
 import AbasDaEmpresa from "@/components/AbasDaEmpresa";
 import Link from "next/link";

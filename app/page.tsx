@@ -1,5 +1,5 @@
 import Link from "next/link";
-import listarVagas, { listarEmpresas } from "@/lib/api";
+import { listarVagas, listarEmpresas } from "@/lib/api";
 
 export default async function Home() {
   const vagas = await listarVagas();

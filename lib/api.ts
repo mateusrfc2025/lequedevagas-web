@@ -5,15 +5,13 @@ const FONTE =
   "https://raw.githubusercontent.com/mateusrfc2025/lequedevagas-web/refs/heads/main/dados";
 
 const candidaturasCriadasEmMemoria: Candidatura[] = [];
-const empresasEditadasEmMemoria: Record<string, Partial<Empresa>> = {};
 
 // Vagas do JSON não existem no banco, então "arquivar" uma delas
 // é só esconder. Some quando o servidor reinicia.
 const vagasArquivadasEmMemoria = new Set<string>();
 
-// ─── LEITURA ───
+// ─── LEITURA: VAGAS ───
 
-// As vagas que vêm do vagas.json
 export async function buscarVagasPublicadas(): Promise<Vaga[]> {
   const resposta = await fetch(`${FONTE}/vagas.json`, {
     next: { revalidate: 60, tags: ["vagas"] },
@@ -22,7 +20,6 @@ export async function buscarVagasPublicadas(): Promise<Vaga[]> {
   return resposta.json();
 }
 
-// Banco primeiro (as mais novas em cima), depois as do JSON
 export async function listarVagas(): Promise<Vaga[]> {
   const criadas = await prisma.vaga.findMany({
     orderBy: { createdAt: "desc" },
@@ -39,20 +36,22 @@ export async function buscarVagaPorId(id: string): Promise<Vaga | undefined> {
   return vagas.find((v) => String(v.id) === String(id));
 }
 
+// ─── LEITURA: EMPRESAS ───
+// REGRA: quando o mesmo slug existe no JSON e no banco, o BANCO VENCE.
+// O banco guarda a edição feita de propósito pela empresa; o JSON é só
+// o ponto de partida publicado pelo time.
+
 export async function listarEmpresas(): Promise<Empresa[]> {
+  let publicadas: Empresa[];
+
   try {
     const resposta = await fetch(`${FONTE}/empresas.json`, {
       next: { revalidate: 60, tags: ["empresas"] },
     });
     if (!resposta.ok) throw new Error("Falha ao buscar empresas");
-    const empresasIniciais: Empresa[] = await resposta.json();
-
-    return empresasIniciais.map((empresa) => ({
-      ...empresa,
-      ...empresasEditadasEmMemoria[empresa.slug],
-    }));
+    publicadas = await resposta.json();
   } catch (erro) {
-    return [
+    publicadas = [
       {
         slug: "tech-corp",
         nome: "Tech Corp",
@@ -61,6 +60,15 @@ export async function listarEmpresas(): Promise<Empresa[]> {
       },
     ];
   }
+
+  const editadas = await prisma.empresa.findMany();
+
+  // Primeiro o JSON, depois o banco por cima: o mesmo slug é sobrescrito.
+  const porSlug = new Map<string, Empresa>();
+  for (const empresa of publicadas) porSlug.set(empresa.slug, empresa);
+  for (const empresa of editadas) porSlug.set(empresa.slug, empresa);
+
+  return [...porSlug.values()];
 }
 
 export async function buscarEmpresa(
@@ -104,13 +112,23 @@ export async function guardarCandidatura(candidatura: Candidatura) {
   return candidatura;
 }
 
+// Grava a empresa no banco. Se ela só existia no JSON, o upsert cria a
+// linha com os dados atuais + as edições; se já estava no banco, atualiza.
 export async function guardarEmpresa(
   slug: string,
   dados: Partial<Empresa>,
 ) {
-  empresasEditadasEmMemoria[slug] = {
-    ...empresasEditadasEmMemoria[slug],
-    ...dados,
+  const atual = await buscarEmpresa(slug);
+
+  const completa = {
+    nome: dados.nome ?? atual?.nome ?? "",
+    sobre: dados.sobre ?? atual?.sobre ?? "",
+    site: dados.site ?? atual?.site ?? "",
   };
-  return { slug, ...dados };
+
+  return await prisma.empresa.upsert({
+    where: { slug },
+    update: completa,
+    create: { slug, ...completa },
+  });
 }

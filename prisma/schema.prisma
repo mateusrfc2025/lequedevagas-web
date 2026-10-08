@@ -19,3 +19,9 @@ model Vaga {
   aceitaIniciante  Boolean  @default(false)
   createdAt        DateTime @default(now())
 }
+model Empresa {
+  slug String @id
+  nome String
+  sobre String
+  site String
+}

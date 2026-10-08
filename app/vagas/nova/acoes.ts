@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { EsquemaDaVaga } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
 import { guardarVaga, buscarEmpresa } from "@/lib/api";
-import type { Estado, Vaga } from "@/lib/tipos";
+import type { Estado } from "@/lib/tipos";
 
 export async function criarVaga(
   estadoAnterior: Estado,
@@ -13,13 +13,11 @@ export async function criarVaga(
 ): Promise<Estado> {
   const valores = valoresDe(dados);
 
-  // 1. DESCONFIE: valida antes de qualquer outra coisa
   const analise = EsquemaDaVaga.safeParse(Object.fromEntries(dados));
   if (!analise.success) {
     return { ok: false, erros: porCampo(analise.error), valores };
   }
 
-  // 2. REGRA QUE O ZOD NÃO SABE: a empresa existe?
   const empresa = await buscarEmpresa(analise.data.empresaSlug);
   if (!empresa) {
     return {
@@ -29,18 +27,15 @@ export async function criarVaga(
     };
   }
 
-  // 3. O id nasce AQUI, no servidor, nunca vindo do formulário
-  const vaga: Vaga = {
+  // Pega o ID retornado pelo Prisma/SQLite
+  const vagaCriada = await guardarVaga({
     ...analise.data,
-    id: crypto.randomUUID(),
     empresa: empresa.nome,
-  };
-  await guardarVaga(vaga);
+  });
 
-  // 4. Avisa o cache (a listagem e os números da home)
   revalidatePath("/vagas");
   revalidatePath("/");
 
-  // 5. redirect por último, fora de qualquer try/catch
-  redirect(`/vagas/${vaga.id}`);
+  // Redireciona usando o ID gerado pelo banco de dados
+  redirect(`/vagas/${vagaCriada.id}`);
 }

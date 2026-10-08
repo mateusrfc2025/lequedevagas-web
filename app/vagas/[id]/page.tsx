@@ -23,7 +23,7 @@ export async function generateMetadata({
 
 export async function generateStaticParams() {
   const vagas = await listarVagas();
-  return vagas.map((vaga) => ({ id: String(vaga.id) }));
+  return vagas.map((vaga: { id: string | number }) => ({ id: String(vaga.id) }));
 }
 
 export default async function VagaPage({ params }: VagaPageProps) {

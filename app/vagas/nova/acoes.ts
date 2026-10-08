@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { EsquemaDaVaga } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
 import { guardarVaga, buscarEmpresa } from "@/lib/api";
-import type { Estado, Vaga } from "@/lib/tipos";
+import type { Estado } from "@/lib/tipos";
 
 export async function criarVaga(
   estadoAnterior: Estado,
@@ -29,16 +29,14 @@ export async function criarVaga(
     };
   }
 
-  const vaga: Vaga = {
+  // Pega o ID retornado pelo Prisma/SQLite
+  const vagaCriada = await guardarVaga({
     ...analise.data,
-    id: crypto.randomUUID(),
     empresa: empresa.nome,
-  };
-
-  await guardarVaga(vaga);
+  });
 
   revalidatePath("/vagas");
   revalidatePath("/");
 
-  redirect(`/vagas/${vaga.id}`);
+  redirect(`/vagas/${vagaCriada.id}`);
 }

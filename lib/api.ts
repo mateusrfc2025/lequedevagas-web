@@ -45,8 +45,11 @@ export async function listarEmpresas(): Promise<Empresa[]> {
   }
 }
 
-export async function buscarEmpresa(slug: string): Promise<Empresa | undefined> {
+export async function buscarEmpresa(
+  slug: string,
+): Promise<Empresa | undefined> {
   const empresas = await listarEmpresas();
+
   return empresas.find((e) => e.slug === slug);
 }
 
@@ -77,10 +80,14 @@ export async function guardarCandidatura(candidatura: Candidatura) {
   return candidatura;
 }
 
-export async function guardarEmpresa(slug: string, dados: Partial<Empresa>) {
+export async function guardarEmpresa(
+  slug: string,
+  dados: Partial<Empresa>,
+) {
   empresasEditadasEmMemoria[slug] = {
     ...empresasEditadasEmMemoria[slug],
     ...dados,
   };
+
   return { slug, ...dados };
 }

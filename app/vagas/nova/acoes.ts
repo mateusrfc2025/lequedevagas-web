@@ -14,11 +14,13 @@ export async function criarVaga(
   const valores = valoresDe(dados);
 
   const analise = EsquemaDaVaga.safeParse(Object.fromEntries(dados));
+
   if (!analise.success) {
     return { ok: false, erros: porCampo(analise.error), valores };
   }
 
   const empresa = await buscarEmpresa(analise.data.empresaSlug);
+
   if (!empresa) {
     return {
       ok: false,
@@ -36,6 +38,5 @@ export async function criarVaga(
   revalidatePath("/vagas");
   revalidatePath("/");
 
-  // Redireciona usando o ID gerado pelo banco de dados
   redirect(`/vagas/${vagaCriada.id}`);
 }

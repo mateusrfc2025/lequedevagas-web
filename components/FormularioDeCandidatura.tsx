@@ -29,7 +29,7 @@ export default function FormularioDeCandidatura({
       <div className="ok" role="status">
         <h3>Candidatura registrada ✓</h3>
         <p>
-          {estado.valores.nome}, recebemos a sua candidatura para{" "}
+          {estado.valores?.nome}, recebemos a sua candidatura para{" "}
           <strong>{tituloDaVaga}</strong>.
         </p>
         <button type="button" onClick={() => window.location.reload()}>
@@ -45,15 +45,15 @@ export default function FormularioDeCandidatura({
 
       <label>
         Nome
-        <input name="nome" type="text" defaultValue={estado.valores.nome} />
+        <input name="nome" type="text" defaultValue={estado.valores?.nome} />
       </label>
-      {estado.erros.nome && <p className="erro">{estado.erros.nome}</p>}
+      {estado.erros?.nome && <p className="erro">{estado.erros.nome}</p>}
 
       <label>
         E-mail
-        <input name="email" type="email" defaultValue={estado.valores.email} />
+        <input name="email" type="email" defaultValue={estado.valores?.email} />
       </label>
-      {estado.erros.email && <p className="erro">{estado.erros.email}</p>}
+      {estado.erros?.email && <p className="erro">{estado.erros.email}</p>}
 
       {/* SEM name: este campo é só o rascunho, não deve ser enviado */}
       <label>
@@ -72,7 +72,7 @@ export default function FormularioDeCandidatura({
       <button type="button" onClick={adicionar}>
         adicionar
       </button>
-      {estado.erros.habilidades && <p className="erro">{estado.erros.habilidades}</p>}
+      {estado.erros?.habilidades && <p className="erro">{estado.erros.habilidades}</p>}
 
       <ul className="chips">
         {habilidades.map((h) => (
@@ -93,6 +93,8 @@ export default function FormularioDeCandidatura({
       {habilidades.map((h) => (
         <input key={h} type="hidden" name="habilidades" value={h} />
       ))}
+
+      {estado.erros?.geral && <p className="erro">{estado.erros.geral}</p>}
 
       <BotaoDeEnviar>Enviar candidatura</BotaoDeEnviar>
     </form>

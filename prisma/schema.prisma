@@ -18,10 +18,21 @@ model Vaga {
   descricao        String
   aceitaIniciante  Boolean  @default(false)
   createdAt        DateTime @default(now())
+  candidaturas     Candidatura[]
 }
+
 model Empresa {
   slug String @id
   nome String
   sobre String
   site String
+}
+
+model Candidatura {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String
+  vagaId    String
+  vaga      Vaga     @relation(fields: [vagaId], references: [id]) // Relação com a Vaga
+  criadaEm  DateTime @default(now())
 }

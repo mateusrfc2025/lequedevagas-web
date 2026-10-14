@@ -5,6 +5,7 @@ import { buscarVagaPorId, listarVagas } from "@/lib/api";
 import DescricaoDaVaga from "@/components/DescricaoDaVaga";
 import BotaoCopiarLink from "@/components/BotaoCopiarLink";
 import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
+import { prisma } from "@/lib/prisma";
 
 type VagaPageProps = {
   params: Promise<{ id: string }>;
@@ -34,6 +35,10 @@ export default async function VagaPage({ params }: VagaPageProps) {
     notFound();
   }
 
+  const totalCandidaturas = await prisma.candidatura.count({
+    where: {vagaId: id},
+  });
+
   return (
     <article>
       <h1>{vaga.titulo}</h1>
@@ -50,6 +55,9 @@ export default async function VagaPage({ params }: VagaPageProps) {
       </p>
       <p>
         <strong>Local:</strong> {vaga.local}
+      </p>
+      <p>
+        <strong>Candidaturas:</strong> {totalCandidaturas}
       </p>
 
       {vaga.aceitaIniciante && (

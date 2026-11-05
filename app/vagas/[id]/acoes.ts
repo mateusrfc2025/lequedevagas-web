@@ -3,6 +3,7 @@
 import { EsquemaDaCandidatura } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
 import { buscarVagaPorId, guardarCandidatura } from "@/lib/api";
+import { prisma } from "@/lib/prisma";
 import type { Estado } from "@/lib/tipos";
 
 export async function enviarCandidatura(
@@ -31,13 +32,24 @@ export async function enviarCandidatura(
     return { ok: false, erros: {}, valores, mensagem: "Essa vaga não existe mais." };
   }
 
-  await guardarCandidatura({
-    ...analise.data,
-    habilidades,
-    id: crypto.randomUUID(),
-    enviadaEm: new Date().toISOString(),
-  });
+  try {
+    await prisma.candidatura.create({
+      data: {
+        nome: analise.data.nome,
+        email: analise.data.email,
+        vagaId: analise.data.vagaId,
+      }
+    });
 
-  // sem revalidate: nenhuma tela pública mostra candidaturas
-  return { ok: true, erros: {}, valores, mensagem: "Candidatura enviada!" };
+    return { ok: true, erros: {}, valores, mensagem: "Candidatura enviada!"};
+
+  } catch (erro: any) {
+    return {
+      ok: false,
+      erros: {
+        geral: "Ocorreu um erro inesperado ao salvar sua candidatura."
+      },
+      valores,
+    };
+  }
 }

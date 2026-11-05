@@ -5,6 +5,7 @@ import { buscarVagaPorId, listarVagas } from "@/lib/api";
 import DescricaoDaVaga from "@/components/DescricaoDaVaga";
 import BotaoCopiarLink from "@/components/BotaoCopiarLink";
 import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
+import { prisma } from "@/lib/prisma";
 
 type VagaPageProps = {
   params: Promise<{ id: string }>;
@@ -34,27 +35,28 @@ export default async function VagaPage({ params }: VagaPageProps) {
     notFound();
   }
 
+  const totalCandidaturas = await prisma.candidatura.count({
+    where: {vagaId: id},
+  });
+
   return (
     <article>
       <h1>{vaga.titulo}</h1>
 
-      <p>
-        <strong>Empresa:</strong>{" "}
-        <Link href={`/empresas/${vaga.empresaSlug}`}>{vaga.empresa}</Link>
+      <p className="text-suave">
+        <Link href={`/empresas/${vaga.empresaSlug}`} className="text-principal">
+          {vaga.empresa}
+        </Link>
+        {" · "}
+        {vaga.area} · {vaga.senioridade} · {vaga.local}
       </p>
-      <p>
-        <strong>Área:</strong> {vaga.area}
-      </p>
-      <p>
-        <strong>Senioridade:</strong> {vaga.senioridade}
-      </p>
-      <p>
-        <strong>Local:</strong> {vaga.local}
+      <p className="text-suave">
+        <strong className="text-principal">{totalCandidaturas}</strong> candidatura(s)
       </p>
 
       {vaga.aceitaIniciante && (
-        <p>
-          <span className="selo">aceita iniciante</span>
+        <p className="w-fit rounded-full bg-sucesso-fundo px-3 py-1 text-sm font-medium text-sucesso">
+          Aceita quem está começando
         </p>
       )}
 

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { EsquemaDaEmpresa } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
 import { buscarEmpresa, guardarEmpresa } from "@/lib/api";
+import { usuarioAtual } from "@/lib/sessao";
+import { podeEditarEmpresa } from "@/lib/permissoes";
 import type { Estado } from "@/lib/tipos";
 
 export async function salvarEmpresa(
@@ -13,6 +15,17 @@ export async function salvarEmpresa(
 ): Promise<Estado> {
   const valores = valoresDe(dados);
 
+  // O slug preso pelo .bind diz QUAL empresa; só a sessão diz QUEM pede.
+  const quem = await usuarioAtual();
+  if (!podeEditarEmpresa(quem, slug)) {
+    return {
+      ok: false,
+      erros: {},
+      valores,
+      mensagem: "Só quem fala por esta empresa pode editar o perfil.",
+    };
+  }
+
   const analise = EsquemaDaEmpresa.safeParse(Object.fromEntries(dados));
   if (!analise.success) {
     return { ok: false, erros: porCampo(analise.error), valores };
@@ -20,13 +33,10 @@ export async function salvarEmpresa(
 
   const atual = await buscarEmpresa(slug);
   if (!atual) {
-    // Falha que não é de campo nenhum: vai na `mensagem`, não em `erros`.
     return { ok: false, erros: {}, valores, mensagem: "Empresa não encontrada." };
   }
 
   await guardarEmpresa(slug, analise.data);
-  // DUAS rotas mostram este dado: o detalhe e a listagem. Revalidar só uma
-  // deixaria a outra com o nome velho.
   revalidatePath(`/empresas/${slug}`);
   revalidatePath("/empresas");
 

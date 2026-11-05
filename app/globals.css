@@ -1,176 +1,123 @@
-/* CSS comum, sem framework: Tailwind só entra na aula 08 do curso.
-   Uma folha só para o projeto inteiro, com classes que as páginas usam por
-   nome — o suficiente para a tela não atrapalhar quem está aprendendo. */
+@import "tailwindcss";
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #09090b;
-  color: #fafafa;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
+@theme {
+  --color-fundo: #ffffff;
+  --color-superficie: #f4f4f5;
+  --color-borda: #e4e4e7;
+  --color-borda-campo: #71717a;
+  --color-principal: #18181b;
+  --color-suave: #52525b;
+  --color-sucesso: #166534;
+  --color-sucesso-fundo: #dcfce7;
+  --color-erro: #be123c;
+  --color-foco: #6d28d9;
 }
 
-a { color: inherit; }
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
 
-/* ---------- moldura ---------- */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-fundo: #09090b;
+      --color-superficie: #18181b;
+      --color-borda: #27272a;
+      --color-borda-campo: #71717a;
+      --color-principal: #fafafa;
+      --color-suave: #a1a1aa;
+      --color-sucesso: #bbf7d0;
+      --color-sucesso-fundo: #14532d;
+      --color-erro: #fda4af;
+      --color-foco: #a78bfa;
+    }
+  }
 
-.cabecalho {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #27272a;
-  flex-wrap: wrap;
-}
-.cabecalho nav { display: flex; gap: 12px; flex-wrap: wrap; }
+  h1 {
+    font-size: var(--text-3xl);
+    line-height: var(--text-3xl--line-height);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: --spacing(4);
+  }
+  h2 {
+    font-size: var(--text-xl);
+    line-height: var(--text-xl--line-height);
+    font-weight: var(--font-weight-semibold);
+    margin-block: --spacing(6) --spacing(2);
+  }
+  h3 {
+    font-weight: var(--font-weight-semibold);
+  }
+  p {
+    margin-block: --spacing(3);
+  }
 
-.menu-link { color: #a1a1aa; text-decoration: none; }
-.menu-link.ativo { color: #fafafa; font-weight: 600; }
+  main a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 
-.conteudo { max-width: 720px; margin: 0 auto; padding: 32px 16px; }
-.rodape { padding: 16px; border-top: 1px solid #27272a; color: #a1a1aa; }
-
-.secao {
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  font-size: 12px;
-  color: #a1a1aa;
-}
-
-/* ---------- listas de vaga ---------- */
-
-.lista { list-style: none; padding: 0; display: grid; gap: 12px; }
-.lista li a {
-  display: block;
-  padding: 14px 16px;
-  border: 1px solid #27272a;
-  border-radius: 12px;
-  text-decoration: none;
-  color: inherit;
-}
-.lista li a:hover { border-color: #52525b; }
-.lista li a span { display: block; color: #a1a1aa; font-size: 14px; }
-
-.selo {
-  display: inline-block;
-  font-size: 13px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #14532d;
-  color: #bbf7d0;
-}
-
-.numeros { color: #a1a1aa; font-size: 14px; }
-
-/* ---------- filtros e abas (aula 03) ---------- */
-
-.filtros { display: grid; gap: 12px; margin: 16px 0; }
-.filtros input {
-  padding: 10px 12px;
-  border: 1px solid #27272a;
-  border-radius: 10px;
-  background: #18181b;
-  color: inherit;
-  font: inherit;
+  :focus-visible {
+    outline: 2px solid var(--color-foco);
+    outline-offset: 2px;
+  }
 }
 
-.chips { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.chip, .chips li {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid #27272a;
-  border-radius: 999px;
-  background: transparent;
-  color: #a1a1aa;
-  font: inherit;
-  cursor: pointer;
+/* Classes antigas que AINDA são usadas por arquivos das frentes 3 e 4.
+   Cada dono apaga a sua no mesmo commit em que converte o último uso. */
+@layer components {
+  .lista { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .lista li a {
+    display: block; padding: 14px 16px; border: 1px solid var(--color-borda);
+    border-radius: 12px; text-decoration: none; color: inherit;
+  }
+  .lista li a:hover { border-color: var(--color-borda-campo); }
+  .lista li a span { display: block; color: var(--color-suave); font-size: 14px; }
+  .lista li form button {
+    margin-top: 8px; padding: 6px 12px; border: 1px solid var(--color-borda-campo);
+    border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer;
+  }
+  .lista li form button:disabled { opacity: .5; cursor: not-allowed; }
+
+  .selo {
+    display: inline-block; font-size: 13px; padding: 4px 10px; border-radius: 999px;
+    background: var(--color-sucesso-fundo); color: var(--color-sucesso);
+  }
+  .numeros { color: var(--color-suave); font-size: 14px; }
+
+  .filtros { display: grid; gap: 12px; margin: 16px 0; }
+  .filtros input {
+    padding: 10px 12px; border: 1px solid var(--color-borda-campo); border-radius: 10px;
+    background: var(--color-superficie); color: inherit; font: inherit;
+  }
+  .chips { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip, .chips li {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    border: 1px solid var(--color-borda); border-radius: 999px; background: transparent;
+    color: var(--color-suave); font: inherit; cursor: pointer;
+  }
+  .chip.ativo { border-color: var(--color-principal); color: var(--color-principal); }
+
+  .formulario button, .aviso button, .ok button {
+    margin-top: 8px; padding: 8px 14px; border: 1px solid var(--color-borda-campo);
+    border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer;
+  }
+  .formulario button:disabled { opacity: .5; cursor: not-allowed; }
+  .formulario { display: grid; gap: 12px; margin-top: 8px; }
+  .formulario label { display: grid; gap: 4px; font-size: 14px; color: var(--color-suave); }
+  .formulario input {
+    padding: 10px 12px; border: 1px solid var(--color-borda-campo); border-radius: 10px;
+    background: var(--color-superficie); color: var(--color-principal); font: inherit;
+  }
+  .erro { color: var(--color-erro); font-size: 14px; margin: 0; }
+  .ok { padding: 16px; border: 1px solid var(--color-sucesso); border-radius: 12px; }
+
+  .aviso { padding: 24px; border: 1px dashed var(--color-borda-campo); border-radius: 12px; }
+  .tecnico { font-family: ui-monospace, monospace; font-size: 12px; color: var(--color-suave); }
+  .skeleton {
+    height: 72px; border-radius: 12px; background: var(--color-superficie);
+    animation: pulsa 1.2s ease-in-out infinite;
+  }
+  @keyframes pulsa { 50% { opacity: .5; } }
+  .texto-legal { max-width: 60ch; }
 }
-.chip.ativo { border-color: #fafafa; color: #fafafa; }
-
-.abas { display: flex; gap: 8px; margin: 16px 0; }
-.aba {
-  padding: 8px 14px;
-  border: 1px solid #27272a;
-  border-radius: 10px;
-  background: transparent;
-  color: #a1a1aa;
-  font: inherit;
-  cursor: pointer;
-}
-.aba.ativa { border-color: #fafafa; color: #fafafa; font-weight: 600; }
-
-/* ---------- descrição e formulário (aula 03) ---------- */
-
-.descricao button, .formulario button, .aviso button, .ok button {
-  margin-top: 8px;
-  padding: 8px 14px;
-  border: 1px solid #3f3f46;
-  border-radius: 10px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-.formulario button:disabled { opacity: .5; cursor: not-allowed; }
-
-.formulario { display: grid; gap: 12px; margin-top: 8px; }
-.formulario label { display: grid; gap: 4px; font-size: 14px; color: #a1a1aa; }
-.formulario input {
-  padding: 10px 12px;
-  border: 1px solid #27272a;
-  border-radius: 10px;
-  background: #18181b;
-  color: #fafafa;
-  font: inherit;
-}
-
-.erro { color: #fda4af; font-size: 14px; margin: 0; }
-.ok { padding: 16px; border: 1px solid #14532d; border-radius: 12px; }
-
-/* ---------- avisos, espera e texto legal ---------- */
-
-.aviso { padding: 24px; border: 1px dashed #3f3f46; border-radius: 12px; }
-.tecnico { font-family: ui-monospace, monospace; font-size: 12px; color: #71717a; }
-
-.skeleton {
-  height: 72px;
-  border-radius: 12px;
-  background: #18181b;
-  animation: pulsa 1.2s ease-in-out infinite;
-}
-@keyframes pulsa { 50% { opacity: .5; } }
-
-.texto-legal { max-width: 60ch; }
-
-/* Rótulo que existe para o leitor de tela e não para os olhos. */
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-.form label {
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.form input {
-  display: block;
-  margin-top: 0.25rem;
-}
-.lista li form button {
-  margin-top: 8px;
-  padding: 6px 12px;
-  border: 1px solid #3f3f46;
-  border-radius: 10px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-.lista li form button:disabled { opacity: .5; cursor: not-allowed; }

@@ -79,17 +79,18 @@ export async function buscarEmpresa(
 }
 
 // ─── ESCRITA ───
-export async function guardarVaga(dados: any) {
+export async function guardarVaga(dados: Omit<Vaga, "id">, autorId: string) {
   return await prisma.vaga.create({
     data: {
       titulo: dados.titulo,
       empresa: dados.empresa,
-      empresaSlug: dados.empresaSlug || "empresa",
+      empresaSlug: dados.empresaSlug,
       area: dados.area,
       senioridade: dados.senioridade,
       local: dados.local,
       descricao: dados.descricao,
       aceitaIniciante: Boolean(dados.aceitaIniciante),
+      autorId,
     },
   });
 }
@@ -131,4 +132,15 @@ export async function guardarEmpresa(
     update: completa,
     create: { slug, ...completa },
   });
+
 }
+
+// As vagas de UMA pessoa. O _count pede ao banco só o NÚMERO de candidaturas.
+export async function listarVagasDoAutor(autorId: string) {
+  return prisma.vaga.findMany({
+    where: { autorId },
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { candidaturas: true } } },
+  });
+}
+

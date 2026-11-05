@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const EsquemaDaVaga = z.object({
   titulo: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
-  empresaSlug: z.string().min(1, "Selecione uma empresa"),
   area: z.string().min(1, "Selecione a área"),
   senioridade: z.string().min(1, "Selecione a senioridade"),
   local: z.string().min(1, "Informe o local"),
@@ -37,4 +36,9 @@ export const EsquemaDaCandidatura = z.object({
 
 export const EsquemaDeArquivar = z.object({
   id: z.string().min(1, "Vaga não informada."),
+});
+
+export const EsquemaDoLogin = z.object({
+  email: z.string().email("Informe um e-mail válido."),
+  senha: z.string().min(1, "Informe a senha."),
 });

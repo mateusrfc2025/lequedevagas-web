@@ -19,6 +19,10 @@ model Vaga {
   aceitaIniciante  Boolean  @default(false)
   createdAt        DateTime @default(now())
   candidaturas     Candidatura[]
+
+  // Frente 1 (aula 7): quem publicou. Opcional: as vagas antigas não têm dono.
+  autorId          String?
+  autor            Pessoa?  @relation(fields: [autorId], references: [id])
 }
 
 model Empresa {
@@ -35,4 +39,16 @@ model Candidatura {
   vagaId    String
   vaga      Vaga     @relation(fields: [vagaId], references: [id]) // Relação com a Vaga
   criadaEm  DateTime @default(now())
+}
+
+// "candidata" ou "empresa". String e não enum: Prisma 5 não tem enum no SQLite.
+model Pessoa {
+  id          String  @id @default(uuid())
+  nome        String
+  email       String  @unique
+  senhaHash   String
+  papel       String  @default("candidata")
+  empresaSlug String?
+
+  vagas       Vaga[]
 }

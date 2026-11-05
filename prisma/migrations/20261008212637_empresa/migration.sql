@@ -4,4 +4,5 @@ CREATE TABLE "Empresa" (
     "nome" TEXT NOT NULL,
     "sobre" TEXT NOT NULL,
     "site" TEXT NOT NULL
+
 );

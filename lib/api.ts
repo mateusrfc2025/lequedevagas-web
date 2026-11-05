@@ -132,6 +132,7 @@ export async function guardarEmpresa(
     update: completa,
     create: { slug, ...completa },
   });
+
 }
 
 // As vagas de UMA pessoa. O _count pede ao banco só o NÚMERO de candidaturas.
@@ -142,3 +143,4 @@ export async function listarVagasDoAutor(autorId: string) {
     include: { _count: { select: { candidaturas: true } } },
   });
 }
+

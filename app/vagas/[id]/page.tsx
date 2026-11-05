@@ -53,6 +53,9 @@ export default async function VagaPage({ params }: VagaPageProps) {
       <p className="text-suave">
         <strong className="text-principal">{totalCandidaturas}</strong> candidatura(s)
       </p>
+      <p>
+        <strong>Candidaturas:</strong> {totalCandidaturas}
+      </p>
 
       {vaga.aceitaIniciante && (
         <p className="w-fit rounded-full bg-sucesso-fundo px-3 py-1 text-sm font-medium text-sucesso">

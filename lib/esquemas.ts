@@ -27,11 +27,13 @@ export const EsquemaDaEmpresa = z.object({
 
 export type DadosDaEmpresa = z.infer<typeof EsquemaDaEmpresa>;
 
-// As habilidades são uma lista: a ação lê com dados.getAll("habilidades").
+// (aula 09) Nome e e-mail vêm da CONTA de quem está logado, e não do formulário.
 export const EsquemaDaCandidatura = z.object({
   vagaId: z.string().min(1, "Vaga não informada."),
-  nome: z.string().min(2, "Informe seu nome completo."),
-  email: z.string().email("Informe um e-mail válido."),
+  habilidades: z
+    .array(z.string().min(1))
+    .min(1, "Adicione pelo menos uma habilidade.")
+    .max(20, "No máximo 20 habilidades."),
 });
 
 export const EsquemaDeArquivar = z.object({
@@ -41,4 +43,11 @@ export const EsquemaDeArquivar = z.object({
 export const EsquemaDoLogin = z.object({
   email: z.string().email("Informe um e-mail válido."),
   senha: z.string().min(1, "Informe a senha."),
+});
+
+// (aula 09) O cadastro: o papel não entra, a conta nasce candidata.
+export const EsquemaDoCadastro = z.object({
+  nome: z.string().min(3, "Informe seu nome (pelo menos 3 letras)."),
+  email: z.string().email("Informe um e-mail válido."),
+  senha: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres."),
 });

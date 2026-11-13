@@ -141,6 +141,15 @@ Vagas criadas, vagas arquivadas, candidaturas e edições de empresa vivem na
 isso some, e no site publicado cada instância tem a sua memória. Isso é
 esperado: a aula 06 troca essa memória por um banco de dados.
 
+## De onde vêm os dados (aula 09)
+
+Da API do Leque de Vagas, na equipe `lequedevagas-mateus-joao-fernando-jasmin`.
+Documentação: https://aulas.umlequedetecnologia.com.br/api/leque-de-vagas/docs
+
+O único arquivo que conhece a API é o `lib/api.ts`. As vagas, as empresas, as
+contas e as candidaturas moram lá, e o localhost de cada pessoa da equipe e o
+site na Vercel leem e gravam o mesmo dado.
+
 ## Licença
 
 Material didático do NickDev. Use para estudar, cite quando reaproveitar.

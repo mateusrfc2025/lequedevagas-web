@@ -12,7 +12,6 @@ export default function FormularioDeCandidatura({
   vagaId: string;
   tituloDaVaga: string;
 }) {
-  // Este pedacinho de estado continua: a lista de chips vive só na tela.
   const [rascunho, setRascunho] = useState("");
   const [habilidades, setHabilidades] = useState<string[]>([]);
   const [estado, acaoDoForm] = useActionState(enviarCandidatura, EstadoInicial);
@@ -29,12 +28,8 @@ export default function FormularioDeCandidatura({
       <div className="ok" role="status">
         <h3>Candidatura registrada ✓</h3>
         <p>
-          {estado.valores?.nome}, recebemos a sua candidatura para{" "}
-          <strong>{tituloDaVaga}</strong>.
+          Recebemos a sua candidatura para <strong>{tituloDaVaga}</strong>. Ela aparece na sua área.
         </p>
-        <button type="button" onClick={() => window.location.reload()}>
-          nova candidatura
-        </button>
       </div>
     );
   }
@@ -42,18 +37,6 @@ export default function FormularioDeCandidatura({
   return (
     <form className="formulario" action={acaoDoForm}>
       <input type="hidden" name="vagaId" value={vagaId} />
-
-      <label>
-        Nome
-        <input name="nome" type="text" defaultValue={estado.valores?.nome} />
-      </label>
-      {estado.erros?.nome && <p className="erro">{estado.erros.nome}</p>}
-
-      <label>
-        E-mail
-        <input name="email" type="email" defaultValue={estado.valores?.email} />
-      </label>
-      {estado.erros?.email && <p className="erro">{estado.erros.email}</p>}
 
       {/* SEM name: este campo é só o rascunho, não deve ser enviado */}
       <label>
@@ -94,7 +77,13 @@ export default function FormularioDeCandidatura({
         <input key={h} type="hidden" name="habilidades" value={h} />
       ))}
 
-      {estado.erros?.geral && <p className="erro">{estado.erros.geral}</p>}
+      {/* candidatura repetida: a API manda o erro no campo email */}
+      {estado.erros?.email && <p className="erro">{estado.erros.email}</p>}
+      {estado.mensagem && (
+        <p className="erro" role="alert">
+          {estado.mensagem}
+        </p>
+      )}
 
       <BotaoDeEnviar>Enviar candidatura</BotaoDeEnviar>
     </form>

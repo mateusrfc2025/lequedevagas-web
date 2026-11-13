@@ -1,17 +1,13 @@
 import { cache } from "react";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { buscarPessoa } from "@/lib/api";
 
-// cache: a consulta roda uma vez por pedido, mesmo chamada em vários lugares.
+/* O crachá diz o id; a API diz o resto. O `cache` faz a pergunta UMA vez por pedido. */
 export const usuarioAtual = cache(async () => {
   const sessao = await auth();
   const id = sessao?.user?.id;
   if (!id) return null;
-
-  return prisma.pessoa.findUnique({
-    where: { id },
-    select: { id: true, nome: true, email: true, papel: true, empresaSlug: true },
-  });
+  return buscarPessoa(id);
 });
 
 export type Quem = NonNullable<Awaited<ReturnType<typeof usuarioAtual>>>;

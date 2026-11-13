@@ -1,22 +1,18 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { buscarVagaPorId, listarVagas } from "@/lib/api";
+import { buscarVaga, contarCandidaturas, listarVagas } from "@/lib/api";
 import DescricaoDaVaga from "@/components/DescricaoDaVaga";
 import BotaoCopiarLink from "@/components/BotaoCopiarLink";
 import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
-import { prisma } from "@/lib/prisma";
 
 type VagaPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({
-  params,
-}: VagaPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: VagaPageProps): Promise<Metadata> {
   const { id } = await params;
-  const vaga = await buscarVagaPorId(id);
-
+  const vaga = await buscarVaga(id);
   return {
     title: vaga ? `${vaga.titulo} - Leque de Vagas` : "Vaga não encontrada",
   };
@@ -24,20 +20,15 @@ export async function generateMetadata({
 
 export async function generateStaticParams() {
   const vagas = await listarVagas();
-  return vagas.map((vaga: { id: string | number }) => ({ id: String(vaga.id) }));
+  return vagas.map((vaga) => ({ id: String(vaga.id) }));
 }
 
 export default async function VagaPage({ params }: VagaPageProps) {
   const { id } = await params;
-  const vaga = await buscarVagaPorId(id);
+  const vaga = await buscarVaga(id);
+  if (!vaga) notFound();
 
-  if (!vaga) {
-    notFound();
-  }
-
-  const totalCandidaturas = await prisma.candidatura.count({
-    where: {vagaId: id},
-  });
+  const totalCandidaturas = await contarCandidaturas(vaga.id);
 
   return (
     <article>
@@ -52,9 +43,6 @@ export default async function VagaPage({ params }: VagaPageProps) {
       </p>
       <p className="text-suave">
         <strong className="text-principal">{totalCandidaturas}</strong> candidatura(s)
-      </p>
-      <p>
-        <strong>Candidaturas:</strong> {totalCandidaturas}
       </p>
 
       {vaga.aceitaIniciante && (

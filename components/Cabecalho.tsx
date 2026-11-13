@@ -12,6 +12,7 @@ export default function Cabecalho() {
         <MenuLink href="/sobre">Sobre</MenuLink>
         <MenuLink href="/termos">Termos</MenuLink>
         <MenuLink href="/painel">Minha área</MenuLink>
+        <MenuLink href="/cadastro">Criar conta</MenuLink>
       </nav>
     </header>
   );

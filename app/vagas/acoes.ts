@@ -1,19 +1,19 @@
 "use server";
-
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
+import { arquivarVaga, buscarVaga } from "@/lib/api";
 import { EsquemaDeArquivar } from "@/lib/esquemas";
-import { arquivarVaga } from "@/lib/api";
+import { podeArquivar } from "@/lib/permissoes";
+import { usuarioAtual } from "@/lib/sessao";
 
-// Sem useActionState: não tem erro para mostrar, então recebe só o FormData.
 export async function arquivar(dados: FormData) {
   const analise = EsquemaDeArquivar.safeParse(Object.fromEntries(dados));
   if (!analise.success) return;
 
-  await arquivarVaga(analise.data.id);
+  // O id do campo escondido pode ser trocado: a ação busca a vaga na API,
+  // e é a vaga que diz quem é o autor.
+  const [quem, vaga] = await Promise.all([usuarioAtual(), buscarVaga(analise.data.id)]);
+  if (!vaga || !podeArquivar(quem, vaga)) return;
 
-  // revalidatePath, e não revalidateTag: a lista de arquivadas vive na
-  // MEMÓRIA, não num fetch. O tag só mandaria buscar o JSON de novo (que
-  // volta igual). O que precisa ser refeito é a renderização da rota.
-  revalidatePath("/vagas");
-  revalidatePath("/");
+  await arquivarVaga(vaga.id);
+  updateTag("vagas");
 }

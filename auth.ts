@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { conferirLogin } from "@/lib/api";
 import { EsquemaDoLogin } from "@/lib/esquemas";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -9,18 +8,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: { signIn: "/entrar" },
   providers: [
     Credentials({
+      credentials: { email: {}, senha: {} },
       async authorize(credenciais) {
         const analise = EsquemaDoLogin.safeParse(credenciais);
         if (!analise.success) return null;
-
-        const pessoa = await prisma.pessoa.findUnique({
-          where: { email: analise.data.email },
-        });
+        // (aula 09) Quem confere agora é a API. O bcrypt e o prisma saíram daqui.
+        const pessoa = await conferirLogin(analise.data.email, analise.data.senha);
         if (!pessoa) return null;
-
-        const confere = await bcrypt.compare(analise.data.senha, pessoa.senhaHash);
-        if (!confere) return null;
-
         return { id: pessoa.id };
       },
     }),

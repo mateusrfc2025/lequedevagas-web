@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useActionState, useId } from "react";
 import BotaoDeEnviar from "./BotaoDeEnviar";
 import { enviarCandidatura } from "@/app/vagas/[id]/acoes";
 import { EstadoInicial } from "@/lib/tipos";
+
+const LISTA_DE_HABILIDADES = [
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Python",
+  "Node.js",
+];
 
 export default function FormularioDeCandidatura({
   vagaId,
@@ -12,21 +21,12 @@ export default function FormularioDeCandidatura({
   vagaId: string;
   tituloDaVaga: string;
 }) {
-  // Este pedacinho de estado continua: a lista de chips vive só na tela.
-  const [rascunho, setRascunho] = useState("");
-  const [habilidades, setHabilidades] = useState<string[]>([]);
   const [estado, acaoDoForm] = useActionState(enviarCandidatura, EstadoInicial);
-
-  function adicionar() {
-    const nova = rascunho.trim();
-    if (nova === "" || habilidades.includes(nova)) return;
-    setHabilidades([...habilidades, nova]);
-    setRascunho("");
-  }
+  const idErroHabilidades = useId();
 
   if (estado.ok) {
     return (
-      <div className="ok" role="status">
+      <div className="ok text-sucesso" role="status">
         <h3>Candidatura registrada ✓</h3>
         <p>
           Recebemos a sua candidatura para <strong>{tituloDaVaga}</strong>.
@@ -42,44 +42,31 @@ export default function FormularioDeCandidatura({
     <form className="formulario" action={acaoDoForm}>
       <input type="hidden" name="vagaId" value={vagaId} />
 
-      {/* SEM name: este campo é só o rascunho, não deve ser enviado */}
-      <label>
-        Habilidades
-        <input
-          value={rascunho}
-          onChange={(e) => setRascunho(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              adicionar();
-            }
-          }}
-        />
-      </label>
-      <button type="button" onClick={adicionar}>
-        adicionar
-      </button>
-      {estado.erros?.habilidades && <p className="erro">{estado.erros.habilidades}</p>}
+      <p className="text-suave" style={{ marginBottom: "1rem" }}>
+        você se candidata com o nome e o e-mail da sua conta
+      </p>
 
-      <ul className="chips">
-        {habilidades.map((h) => (
-          <li key={h}>
-            {h}
-            <button
-              type="button"
-              aria-label={`remover ${h}`}
-              onClick={() => setHabilidades(habilidades.filter((x) => x !== h))}
-            >
-              ×
-            </button>
-          </li>
-        ))}
-      </ul>
+      <fieldset 
+        aria-describedby={estado.erros?.habilidades ? idErroHabilidades : undefined}
+        style={{ marginBottom: "1rem" }}
+      >
+        <legend>Habilidades</legend>
+        
+        <div style={{ display: "grid", gap: "0.5rem", marginTop: "0.5rem" }}>
+          {LISTA_DE_HABILIDADES.map((hab) => (
+            <label key={hab} style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+              <input type="checkbox" name="habilidades" value={hab} />
+              {hab}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
-      {/* As habilidades viajam nestes campos escondidos (mesmo name) */}
-      {habilidades.map((h) => (
-        <input key={h} type="hidden" name="habilidades" value={h} />
-      ))}
+      {estado.erros?.habilidades && (
+        <p id={idErroHabilidades} className="erro">
+          {estado.erros.habilidades}
+        </p>
+      )}
 
       {estado.erros?.geral && <p className="erro">{estado.erros.geral}</p>}
 

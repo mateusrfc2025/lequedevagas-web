@@ -5,12 +5,24 @@ import { porCampo, valoresDe } from "@/lib/formulario";
 import { buscarVagaPorId, guardarCandidatura } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import type { Estado } from "@/lib/tipos";
+import { auth } from "@/auth";
 
 export async function enviarCandidatura(
   estadoAnterior: Estado,
   dados: FormData,
 ): Promise<Estado> {
+  const sessao = await auth();
   const valores = valoresDe(dados);
+
+  if(!sessao?.user?.id){
+    return{
+      ok: false,
+      erros: {
+        geral:  "Você precisa estar logado para se candidatar."
+      },
+      valores,
+    };
+  }
 
   const analise = EsquemaDaCandidatura.safeParse(Object.fromEntries(dados));
   if (!analise.success) {
@@ -29,14 +41,20 @@ export async function enviarCandidatura(
 
   const vaga = await buscarVagaPorId(analise.data.vagaId);
   if (!vaga) {
-    return { ok: false, erros: {}, valores, mensagem: "Essa vaga não existe mais." };
+    return { 
+      ok: false,
+      erros: {},
+      valores,
+      mensagem: "Essa vaga não existe mais." 
+    };
   }
 
   try {
     await prisma.candidatura.create({
       data: {
-        nome: analise.data.nome,
-        email: analise.data.email,
+        nome: sessao.user.name || "Usuário",
+        email: sessao.user.email || "",
+        pessoaId:sessao.user.id,
         vagaId: analise.data.vagaId,
       }
     });

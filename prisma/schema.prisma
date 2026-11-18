@@ -28,11 +28,22 @@ model Empresa {
   site String
 }
 
+model Pessoa {
+  id           String        @id @default(uuid())
+  nome         String
+  email        String        @unique
+  senha        String
+  papel        String
+  candidaturas Candidatura[]
+}
+
 model Candidatura {
   id        String   @id @default(uuid())
-  nome      String
+  nome      String   // Mantemos no banco para legados/anônimos, se houver
   email     String
   vagaId    String
-  vaga      Vaga     @relation(fields: [vagaId], references: [id]) // Relação com a Vaga
+  vaga      Vaga     @relation(fields: [vagaId], references: [id])
+  pessoaId  String?  // <-- NOVO: Opcional conforme o briefing (Parte 3.1)
+  pessoa    Pessoa?  @relation(fields: [pessoaId], references: [id]) // <-- NOVO
   criadaEm  DateTime @default(now())
 }

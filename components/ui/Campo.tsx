@@ -18,7 +18,7 @@ export default function Campo({ rotulo, erro, className = "", ...props }: Props)
         id={id}
         aria-invalid={erro ? true : undefined}
         aria-describedby={erro ? idDoErro : undefined}
-        className={`rounded-lg border border-borda-campo bg-superficie px-3 py-2.5 aria-[invalid=true]:border-erro ${className}`}
+        className={`rounded-lg border border-borda-campo bg-superficie px-3 py-2.5 aria-invalid:border-erro ${className}`}
         {...props}
       />
       {erro && (

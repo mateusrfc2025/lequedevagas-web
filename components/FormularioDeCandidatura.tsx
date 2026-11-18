@@ -29,8 +29,7 @@ export default function FormularioDeCandidatura({
       <div className="ok" role="status">
         <h3>Candidatura registrada ✓</h3>
         <p>
-          {estado.valores?.nome}, recebemos a sua candidatura para{" "}
-          <strong>{tituloDaVaga}</strong>.
+          Recebemos a sua candidatura para <strong>{tituloDaVaga}</strong>.
         </p>
         <button type="button" onClick={() => window.location.reload()}>
           nova candidatura
@@ -42,18 +41,6 @@ export default function FormularioDeCandidatura({
   return (
     <form className="formulario" action={acaoDoForm}>
       <input type="hidden" name="vagaId" value={vagaId} />
-
-      <label>
-        Nome
-        <input name="nome" type="text" defaultValue={estado.valores?.nome} />
-      </label>
-      {estado.erros?.nome && <p className="erro">{estado.erros.nome}</p>}
-
-      <label>
-        E-mail
-        <input name="email" type="email" defaultValue={estado.valores?.email} />
-      </label>
-      {estado.erros?.email && <p className="erro">{estado.erros.email}</p>}
 
       {/* SEM name: este campo é só o rascunho, não deve ser enviado */}
       <label>

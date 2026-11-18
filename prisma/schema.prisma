@@ -38,6 +38,8 @@ model Candidatura {
   email     String
   vagaId    String
   vaga      Vaga     @relation(fields: [vagaId], references: [id]) // Relação com a Vaga
+  pessoaId  String?  // <-- Recuperado da Frente 3
+  pessoa    Pessoa?  @relation(fields: [pessoaId], references: [id]) // <-- Recuperado da Frente 3
   criadaEm  DateTime @default(now())
 }
 
@@ -46,9 +48,10 @@ model Pessoa {
   id          String  @id @default(uuid())
   nome        String
   email       String  @unique
-  senhaHash   String
+  senha       String  // <-- CORRIGIDO: mudou de senhaHash para senha
   papel       String  @default("candidata")
   empresaSlug String?
 
-  vagas       Vaga[]
+  vagas        Vaga[]
+  candidaturas Candidatura[] // <-- Recuperado da Frente 3
 }

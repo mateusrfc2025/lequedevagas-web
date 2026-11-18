@@ -30,13 +30,19 @@ export type DadosDaEmpresa = z.infer<typeof EsquemaDaEmpresa>;
 // As habilidades são uma lista: a ação lê com dados.getAll("habilidades").
 export const EsquemaDaCandidatura = z.object({
   vagaId: z.string().min(1, "Vaga não informada."),
-  nome: z.string().min(2, "Informe seu nome completo."),
-  email: z.string().email("Informe um e-mail válido."),
 });
 
 export const EsquemaDeArquivar = z.object({
   id: z.string().min(1, "Vaga não informada."),
 });
+
+export const EsquemaDoCadastro = z.object({
+  nome: z.string().min(2, "Informe seu nome completo."),
+  email: z.string().email("Informe um e-mail válido."),
+  senha: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."),
+});
+
+export type DadosDoCadastro = z.infer<typeof EsquemaDoCadastro>;
 
 export const EsquemaDoLogin = z.object({
   email: z.string().email("Informe um e-mail válido."),

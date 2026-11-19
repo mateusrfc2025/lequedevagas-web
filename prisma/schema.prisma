@@ -17,6 +17,7 @@ model Vaga {
   local            String
   descricao        String
   aceitaIniciante  Boolean  @default(false)
+  arquivada        Boolean  @default(false)
   createdAt        DateTime @default(now())
   candidaturas     Candidatura[]
 
@@ -55,3 +56,4 @@ model Pessoa {
   vagas        Vaga[]
   candidaturas Candidatura[] // <-- Recuperado da Frente 3
 }
+

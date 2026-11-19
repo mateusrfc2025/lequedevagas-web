@@ -1,3 +1,4 @@
+
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -10,14 +11,15 @@ const pessoas = [
 ];
 
 for (const p of pessoas) {
-  // um hash por pessoa: a mesma senha gera hashes diferentes (o sal do bcrypt)
-  const senhaHash = await bcrypt.hash("leque1234", 10);
+  const senha = await bcrypt.hash("leque1234", 10);
+
   await prisma.pessoa.upsert({
     where: { email: p.email },
-    update: {},
-    create: { ...p, senhaHash },
+    update: { senha },
+    create: { ...p, senha },
   });
 }
 
-console.log("Seed ok: ana, bruno e carla (senha leque1234)");
+console.log("Seed ok: Ana, Bruno e Carla (senha leque1234)");
+
 await prisma.$disconnect();

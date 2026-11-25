@@ -1,149 +1,112 @@
+import type { Vaga, VagaNova, Empresa, Pessoa, Candidatura } from "./tipos";
 
-import { prisma } from "./prisma";
-import type { Vaga, Empresa, Candidatura } from "./tipos";
-
-const FONTE =
-  "https://raw.githubusercontent.com/mateusrfc2025/lequedevagas-web/refs/heads/main/dados";
+// Não é segredo e é igual em todo ambiente: por isso não vai pro .env.
+const API =
+  "https://aulas.umlequedetecnologia.com.br/api/leque-de-vagas/equipe/lequedevagas-web";
 
 const candidaturasCriadasEmMemoria: Candidatura[] = [];
 
-// Vagas do JSON não existem no banco, então "arquivar" uma delas
-// é só esconder. Some quando o servidor reinicia.
-const vagasArquivadasEmMemoria = new Set<string>();
+// ─── AJUDANTES ───
 
-// ─── LEITURA: VAGAS ───
-
-export async function buscarVagasPublicadas(): Promise<Vaga[]> {
-  const resposta = await fetch(`${FONTE}/vagas.json`, {
-    next: { revalidate: 60, tags: ["vagas"] },
-  });
-  if (!resposta.ok) throw new Error("Falha ao buscar vagas");
-  return resposta.json();
+/** GET. 404 → undefined. Outro erro → exceção (vai pro error.tsx). */
+async function ler<T>(caminho: string, etiqueta: string | null): Promise<T | undefined> {
+  const resposta = await fetch(
+    `${API}${caminho}`,
+    etiqueta ? { next: { revalidate: 60, tags: [etiqueta] } } : { cache: "no-store" },
+  );
+  if (resposta.status === 404) return undefined;
+  if (!resposta.ok) throw new Error(`API respondeu ${resposta.status} em GET ${caminho}`);
+  return (await resposta.json()) as T;
 }
 
-export async function listarVagas(): Promise<Vaga[]> {
-  const criadas = await prisma.vaga.findMany({
-    where: { arquivada: false },
-    orderBy: { createdAt: "desc" },
-  });
-  const publicadas = await buscarVagasPublicadas();
+export type Gravou<T> =
+  | { ok: true; dado: T }
+  | { ok: false; status: number; erros: Record<string, string>; mensagem: string };
 
-  return [...criadas, ...publicadas].filter(
-    (vaga) => !vagasArquivadasEmMemoria.has(String(vaga.id)),
-  );
+/** POST/PUT/PATCH/DELETE. 4xx volta pro formulário; 5xx vira exceção. */
+async function gravar<T>(
+  metodo: "POST" | "PUT" | "PATCH" | "DELETE",
+  caminho: string,
+  corpo?: unknown,
+): Promise<Gravou<T>> {
+  const resposta = await fetch(`${API}${caminho}`, {
+    method: metodo,
+    headers: { "Content-Type": "application/json" },
+    body: corpo === undefined ? undefined : JSON.stringify(corpo),
+  });
+
+  if (resposta.status >= 500) {
+    throw new Error(`API respondeu ${resposta.status} em ${metodo} ${caminho}`);
+  }
+  if (resposta.status === 204) return { ok: true, dado: null as T };
+  if (resposta.ok) return { ok: true, dado: (await resposta.json()) as T };
+
+  // 422, 409, 401, 404: { erro, status, campos }
+  const erro = await resposta.json().catch(() => ({}));
+  return {
+    ok: false,
+    status: resposta.status,
+    erros: erro.campos ?? {},
+    mensagem: erro.erro ?? "Não foi possível gravar.",
+  };
+}
+
+// ─── VAGAS (frente 1) ───
+
+export async function listarVagas(): Promise<Vaga[]> {
+  return (await ler<Vaga[]>("/vagas", "vagas")) ?? [];
 }
 
 export async function buscarVagaPorId(id: string): Promise<Vaga | undefined> {
-  const vagas = await listarVagas();
-  return vagas.find((v) => String(v.id) === String(id));
+  return ler<Vaga>(`/vagas/${encodeURIComponent(id)}`, "vagas");
 }
 
-// ─── LEITURA: EMPRESAS ───
-// REGRA: quando o mesmo slug existe no JSON e no banco, o BANCO VENCE.
-// O banco guarda a edição feita de propósito pela empresa; o JSON é só
-// o ponto de partida publicado pelo time.
+export async function guardarVaga(vaga: VagaNova, autorId: string) {
+  return gravar<Vaga>("POST", "/vagas", { ...vaga, autorId });
+}
+
+// ─── EMPRESAS (frente 2) ───
 
 export async function listarEmpresas(): Promise<Empresa[]> {
-  let publicadas: Vaga[] | Empresa[];
-
-  try {
-    const resposta = await fetch(`${FONTE}/empresas.json`, {
-      next: { revalidate: 60, tags: ["empresas"] },
-    });
-    if (!resposta.ok) throw new Error("Falha ao buscar empresas");
-    publicadas = await resposta.json();
-  } catch (erro) {
-    publicadas = [
-      {
-        slug: "tech-corp",
-        nome: "Tech Corp",
-        sobre: "Empresa de tecnologia",
-        site: "https://example.com",
-      },
-    ];
-  }
-
-  const editadas = await prisma.empresa.findMany();
-
-  // Primeiro o JSON, depois o banco por cima: o mesmo slug é sobrescrito.
-  const porSlug = new Map<string, Empresa>();
-  for (const empresa of publicadas as Empresa[]) porSlug.set(empresa.slug, empresa);
-  for (const empresa of editadas) porSlug.set(empresa.slug, empresa);
-
-  return [...porSlug.values()];
+  return (await ler<Empresa[]>("/empresas", "empresas")) ?? [];
 }
 
-export async function buscarEmpresa(
+export async function buscarEmpresa(slug: string): Promise<Empresa | undefined> {
+  return ler<Empresa>(`/empresas/${encodeURIComponent(slug)}`, "empresas");
+}
+
+export async function guardarEmpresa(
   slug: string,
-): Promise<Empresa | undefined> {
-  const empresas = await listarEmpresas();
-  return empresas.find((e) => e.slug === slug);
+  dados: Pick<Empresa, "nome" | "sobre" | "site">,
+) {
+  return gravar<Empresa>("PUT", `/empresas/${encodeURIComponent(slug)}`, dados);
 }
 
-// ─── ESCRITA ───
-export async function guardarVaga(dados: Omit<Vaga, "id">, autorId: string) {
-  return await prisma.vaga.create({
-    data: {
-      titulo: dados.titulo,
-      empresa: dados.empresa,
-      empresaSlug: dados.empresaSlug,
-      area: dados.area,
-      senioridade: dados.senioridade,
-      local: dados.local,
-      descricao: dados.descricao,
-      aceitaIniciante: Boolean(dados.aceitaIniciante),
-      autorId,
-    },
-  });
+// As vagas de UMA pessoa (painel da empresa).
+export async function listarVagasDoAutor(autorId: string): Promise<Vaga[]> {
+  return (await ler<Vaga[]>(`/vagas?autor=${encodeURIComponent(autorId)}`, "vagas")) ?? [];
 }
+
+// ─── LOGIN (passo 7) ───
+
+export async function conferirLogin(email: string, senha: string) {
+  return gravar<Pessoa>("POST", "/sessoes", { email, senha });
+}
+
+// Sem cache: os dados da conta são lidos a cada pedido.
+export async function buscarPessoa(id: string): Promise<Pessoa | undefined> {
+  return ler<Pessoa>(`/pessoas/${encodeURIComponent(id)}`, null);
+}
+
+// ─── ARQUIVAR (frente 4): PATCH na API ───
 
 export async function arquivarVaga(id: string) {
-  const noBanco = await prisma.vaga.findUnique({ where: { id } });
-
-  if (noBanco) {
-    await prisma.vaga.update({
-      where: { id },
-      data: { arquivada: true },
-    });
-  } else {
-    // Veio do JSON: não dá pra apagar, só esconder
-    vagasArquivadasEmMemoria.add(String(id));
-  }
-
-  return { id, arquivada: true };
+  return gravar<Vaga>("PATCH", `/vagas/${encodeURIComponent(id)}`, { arquivada: true });
 }
+
+// ─── AINDA NÃO MIGRADA (frente 3: não mexa) ───
 
 export async function guardarCandidatura(candidatura: Candidatura) {
   candidaturasCriadasEmMemoria.unshift(candidatura);
   return candidatura;
-}
-
-// Grava a empresa no banco. Se ela só existia no JSON, o upsert cria a
-// linha com os dados atuais + as edições; se já estava no banco, atualiza.
-export async function guardarEmpresa(
-  slug: string,
-  dados: Partial<Empresa>,
-) {
-  const atual = await buscarEmpresa(slug);
-
-  const completa = {
-    nome: dados.nome ?? atual?.nome ?? "",
-    sobre: dados.sobre ?? atual?.sobre ?? "",
-    site: dados.site ?? atual?.site ?? "",
-  };
-
-  return await prisma.empresa.upsert({
-    where: { slug },
-    update: completa,
-    create: { slug, ...completa },
-  });
-}
-
-// As vagas de UMA pessoa. O _count pede ao banco só o NÚMERO de candidaturas.
-export async function listarVagasDoAutor(autorId: string) {
-  return prisma.vaga.findMany({
-    where: { autorId, arquivada: false },
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { candidaturas: true } } },
-  });
 }

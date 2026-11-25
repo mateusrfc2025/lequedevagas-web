@@ -9,7 +9,7 @@ export const EsquemaDaVaga = z.object({
   aceitaIniciante: z.literal("on").optional().transform((val) => val === "on"),
   descricao: z
     .string()
-    .min(20, "Descreva a vaga com pelo menos 20 caracteres")
+    .min(80, "Descreva a vaga com pelo menos 80 caracteres")
     .max(2000, "A descrição da vaga não pode ultrapassar 2000 caracteres"),
 });
 

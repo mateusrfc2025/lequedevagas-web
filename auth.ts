@@ -1,8 +1,7 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { conferirLogin } from "@/lib/api";
 import { EsquemaDoLogin } from "@/lib/esquemas";
 
 declare module "next-auth" {
@@ -39,17 +38,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { email, senha } = analise.data;
 
-        const pessoa = await prisma.pessoa.findUnique({
-          where: { email },
-        });
+        // POST /sessoes: a API confere a senha e devolve a pessoa sem o hash.
+        const gravou = await conferirLogin(email, senha);
+        if (!gravou.ok) return null; // 401: e-mail ou senha errados
 
-        if (!pessoa) return null;
-
-        const senhaValida = await bcrypt.compare(senha, pessoa.senha);
-        if (!senhaValida) return null;
+        const pessoa = gravou.dado;
 
         return {
-          id: String(pessoa.id),
+          id: pessoa.id,
           name: pessoa.nome,
           email: pessoa.email,
           papel: pessoa.papel,

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -40,7 +41,7 @@ export default function MuralDeVagas({ vagas }: { vagas: Vaga[] }) {
         areas={areas}
       />
 
-      <p className="numeros">
+      <p className="text-suave" aria-live="polite">
         <strong>{visiveis.length}</strong> de {vagas.length} vagas ·{" "}
         <strong>{aceitamIniciante}</strong> aceitam quem está começando
       </p>

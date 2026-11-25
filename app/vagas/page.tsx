@@ -1,3 +1,4 @@
+
 import { Suspense } from "react";
 import NumerosDoCatalogo from "@/components/NumerosDoCatalogo";
 import ListagemDeVagas from "@/components/ListagemDeVagas";
@@ -8,7 +9,7 @@ export default function Vagas() {
       <h1>Vagas</h1>
 
       {/* fallback com a MESMA altura do bloco real, para a tela não pular */}
-      <Suspense fallback={<div className="skeleton" style={{ height: 24 }} />}>
+      <Suspense fallback={<div className="h-6 rounded-lg bg-superficie motion-safe:animate-pulse" />}>
         <NumerosDoCatalogo />
       </Suspense>
 

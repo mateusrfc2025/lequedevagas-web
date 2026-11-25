@@ -11,3 +11,17 @@ export function podePublicar(
 export function podeEditarEmpresa(quem: Quem | null, slug: string): boolean {
   return quem?.papel === "empresa" && quem.empresaSlug === slug;
 }
+
+
+/** Arquivar vaga: só quem publicou pode arquivar. (frente 4) */
+export function podeArquivar(
+  quem: Quem | null,
+  vaga: { autorId: string | null } | null,
+): boolean {
+  return (
+    quem?.papel === "empresa" &&
+    vaga !== null &&
+    vaga.autorId === quem.id
+  );
+}
+

@@ -1,3 +1,4 @@
+
 import { prisma } from "./prisma";
 import type { Vaga, Empresa, Candidatura } from "./tipos";
 
@@ -22,6 +23,7 @@ export async function buscarVagasPublicadas(): Promise<Vaga[]> {
 
 export async function listarVagas(): Promise<Vaga[]> {
   const criadas = await prisma.vaga.findMany({
+    where: { arquivada: false },
     orderBy: { createdAt: "desc" },
   });
   const publicadas = await buscarVagasPublicadas();
@@ -42,7 +44,7 @@ export async function buscarVagaPorId(id: string): Promise<Vaga | undefined> {
 // o ponto de partida publicado pelo time.
 
 export async function listarEmpresas(): Promise<Empresa[]> {
-  let publicadas: Empresa[];
+  let publicadas: Vaga[] | Empresa[];
 
   try {
     const resposta = await fetch(`${FONTE}/empresas.json`, {
@@ -65,7 +67,7 @@ export async function listarEmpresas(): Promise<Empresa[]> {
 
   // Primeiro o JSON, depois o banco por cima: o mesmo slug é sobrescrito.
   const porSlug = new Map<string, Empresa>();
-  for (const empresa of publicadas) porSlug.set(empresa.slug, empresa);
+  for (const empresa of publicadas as Empresa[]) porSlug.set(empresa.slug, empresa);
   for (const empresa of editadas) porSlug.set(empresa.slug, empresa);
 
   return [...porSlug.values()];
@@ -99,7 +101,10 @@ export async function arquivarVaga(id: string) {
   const noBanco = await prisma.vaga.findUnique({ where: { id } });
 
   if (noBanco) {
-    await prisma.vaga.delete({ where: { id } });
+    await prisma.vaga.update({
+      where: { id },
+      data: { arquivada: true },
+    });
   } else {
     // Veio do JSON: não dá pra apagar, só esconder
     vagasArquivadasEmMemoria.add(String(id));
@@ -132,15 +137,13 @@ export async function guardarEmpresa(
     update: completa,
     create: { slug, ...completa },
   });
-
 }
 
 // As vagas de UMA pessoa. O _count pede ao banco só o NÚMERO de candidaturas.
 export async function listarVagasDoAutor(autorId: string) {
   return prisma.vaga.findMany({
-    where: { autorId },
+    where: { autorId, arquivada: false },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { candidaturas: true } } },
   });
 }
-

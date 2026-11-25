@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 
 @theme {
@@ -39,15 +40,18 @@
     font-weight: var(--font-weight-bold);
     margin-bottom: --spacing(4);
   }
+
   h2 {
     font-size: var(--text-xl);
     line-height: var(--text-xl--line-height);
     font-weight: var(--font-weight-semibold);
     margin-block: --spacing(6) --spacing(2);
   }
+
   h3 {
     font-weight: var(--font-weight-semibold);
   }
+
   p {
     margin-block: --spacing(3);
   }
@@ -67,57 +71,64 @@
    Cada dono apaga a sua no mesmo commit em que converte o último uso. */
 @layer components {
   .lista { list-style: none; padding: 0; display: grid; gap: 12px; }
+
   .lista li a {
     display: block; padding: 14px 16px; border: 1px solid var(--color-borda);
     border-radius: 12px; text-decoration: none; color: inherit;
   }
+
   .lista li a:hover { border-color: var(--color-borda-campo); }
-  .lista li a span { display: block; color: var(--color-suave); font-size: 14px; }
+
+  .lista li a span {
+    display: block; color: var(--color-suave); font-size: 14px;
+  }
+
   .lista li form button {
     margin-top: 8px; padding: 6px 12px; border: 1px solid var(--color-borda-campo);
     border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer;
   }
+
   .lista li form button:disabled { opacity: .5; cursor: not-allowed; }
 
   .selo {
     display: inline-block; font-size: 13px; padding: 4px 10px; border-radius: 999px;
     background: var(--color-sucesso-fundo); color: var(--color-sucesso);
   }
-  .numeros { color: var(--color-suave); font-size: 14px; }
-
-  .filtros { display: grid; gap: 12px; margin: 16px 0; }
-  .filtros input {
-    padding: 10px 12px; border: 1px solid var(--color-borda-campo); border-radius: 10px;
-    background: var(--color-superficie); color: inherit; font: inherit;
-  }
-  .chips { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip, .chips li {
-    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
-    border: 1px solid var(--color-borda); border-radius: 999px; background: transparent;
-    color: var(--color-suave); font: inherit; cursor: pointer;
-  }
-  .chip.ativo { border-color: var(--color-principal); color: var(--color-principal); }
 
   .formulario button, .aviso button, .ok button {
     margin-top: 8px; padding: 8px 14px; border: 1px solid var(--color-borda-campo);
     border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer;
   }
+
   .formulario button:disabled { opacity: .5; cursor: not-allowed; }
+
   .formulario { display: grid; gap: 12px; margin-top: 8px; }
-  .formulario label { display: grid; gap: 4px; font-size: 14px; color: var(--color-suave); }
+
+  .formulario label {
+    display: grid; gap: 4px; font-size: 14px; color: var(--color-suave);
+  }
+
   .formulario input {
     padding: 10px 12px; border: 1px solid var(--color-borda-campo); border-radius: 10px;
     background: var(--color-superficie); color: var(--color-principal); font: inherit;
   }
+
   .erro { color: var(--color-erro); font-size: 14px; margin: 0; }
+
   .ok { padding: 16px; border: 1px solid var(--color-sucesso); border-radius: 12px; }
 
   .aviso { padding: 24px; border: 1px dashed var(--color-borda-campo); border-radius: 12px; }
-  .tecnico { font-family: ui-monospace, monospace; font-size: 12px; color: var(--color-suave); }
+
+  .tecnico {
+    font-family: ui-monospace, monospace; font-size: 12px; color: var(--color-suave);
+  }
+
   .skeleton {
     height: 72px; border-radius: 12px; background: var(--color-superficie);
     animation: pulsa 1.2s ease-in-out infinite;
   }
+
   @keyframes pulsa { 50% { opacity: .5; } }
+
   .texto-legal { max-width: 60ch; }
 }

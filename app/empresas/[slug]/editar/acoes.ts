@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { EsquemaDaEmpresa } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
-import { buscarEmpresa, guardarEmpresa } from "@/lib/api";
+import { guardarEmpresa } from "@/lib/api";
 import { usuarioAtual } from "@/lib/sessao";
 import { podeEditarEmpresa } from "@/lib/permissoes";
 import type { Estado } from "@/lib/tipos";
@@ -31,14 +31,21 @@ export async function salvarEmpresa(
     return { ok: false, erros: porCampo(analise.error), valores };
   }
 
-  const atual = await buscarEmpresa(slug);
-  if (!atual) {
-    return { ok: false, erros: {}, valores, mensagem: "Empresa não encontrada." };
+  // PUT /empresas/{slug}. A API valida de novo:
+  // nome 2–80, sobre 20–600, site começando com https://
+  const gravou = await guardarEmpresa(slug, analise.data);
+  if (!gravou.ok) {
+    return {
+      ok: false,
+      erros: gravou.erros,
+      valores,
+      mensagem: gravou.mensagem,
+    };
   }
 
-  await guardarEmpresa(slug, analise.data);
-  revalidatePath(`/empresas/${slug}`);
-  revalidatePath("/empresas");
+  // "vagas" também: o nome da empresa aparece nos cards das vagas.
+  updateTag("empresas");
+  updateTag("vagas");
 
   return { ok: true, erros: {}, valores, mensagem: "Perfil atualizado." };
 }

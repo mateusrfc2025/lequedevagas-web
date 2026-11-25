@@ -36,6 +36,7 @@ export default async function Painel() {
 }
 
 async function PainelDaEmpresa({ quem }: { quem: Quem }) {
+  // GET /vagas?autor={id}: só as vagas que ESTA pessoa publicou.
   const [empresa, vagas] = await Promise.all([
     quem.empresaSlug ? buscarEmpresa(quem.empresaSlug) : undefined,
     listarVagasDoAutor(quem.id),
@@ -65,10 +66,9 @@ async function PainelDaEmpresa({ quem }: { quem: Quem }) {
             >
               <Link href={`/vagas/${vaga.id}`} className={LINK_DO_CARTAO}>
                 <span className="font-semibold">{vaga.titulo}</span>
+                {/* Contagem de candidaturas removida: contarCandidaturas() é da frente 3. */}
                 <span className="block text-sm text-suave">
-                  {vaga._count.candidaturas === 1
-                    ? "1 candidatura"
-                    : `${vaga._count.candidaturas} candidaturas`}
+                  {vaga.area} · {vaga.local}
                 </span>
               </Link>
 

@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { EsquemaDaVaga } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
-import { guardarVaga, buscarEmpresa } from "@/lib/api";
+import { guardarVaga } from "@/lib/api";
 import { usuarioAtual } from "@/lib/sessao";
 import { podePublicar } from "@/lib/permissoes";
 import type { Estado } from "@/lib/tipos";
@@ -26,31 +26,31 @@ export async function criarVaga(
     };
   }
 
-  // 1. DESCONFIE do formulário.
+  // 1. Primeira camada: o Zod (ex.: descrição com menos de 80 caracteres).
   const analise = EsquemaDaVaga.safeParse(Object.fromEntries(dados));
   if (!analise.success) {
     return { ok: false, erros: porCampo(analise.error), valores };
   }
 
-  // 2. A empresa vem da SESSÃO, nunca do formulário.
-  const empresa = await buscarEmpresa(quem.empresaSlug);
-  if (!empresa) {
-    return {
-      ok: false,
-      erros: {},
-      valores,
-      mensagem: "Sua empresa não está cadastrada.",
-    };
-  }
-
-  // 3. O dono da vaga é quem está na sessão.
-  const vagaCriada = await guardarVaga(
-    { ...analise.data, empresa: empresa.nome, empresaSlug: empresa.slug },
+  // 2. Segunda camada: a API. A empresa vem da SESSÃO, nunca do formulário.
+  //    O id, a data e o nome da empresa quem define é a API.
+  const gravou = await guardarVaga(
+    { ...analise.data, empresaSlug: quem.empresaSlug },
     quem.id,
   );
 
-  revalidatePath("/vagas");
-  revalidatePath("/");
+  if (!gravou.ok) {
+    // Os "campos" da API chegam direto como erros do formulário.
+    return {
+      ok: false,
+      erros: gravou.erros,
+      valores,
+      mensagem: gravou.mensagem,
+    };
+  }
 
-  redirect(`/vagas/${vagaCriada.id}`);
+  // 3. Invalida o cache do mural, da empresa e do início.
+  updateTag("vagas");
+
+  redirect(`/vagas/${gravou.dado.id}`);
 }

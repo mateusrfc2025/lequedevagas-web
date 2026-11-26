@@ -1,11 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { buscarVagaPorId, listarVagas } from "@/lib/api";
+import { buscarVagaPorId, contarCandidaturas, listarVagas } from "@/lib/api";
 import DescricaoDaVaga from "@/components/DescricaoDaVaga";
 import BotaoCopiarLink from "@/components/BotaoCopiarLink";
 import FormularioDeCandidatura from "@/components/FormularioDeCandidatura";
-import { prisma } from "@/lib/prisma";
 
 type VagaPageProps = {
   params: Promise<{ id: string }>;
@@ -29,15 +28,14 @@ export async function generateStaticParams() {
 
 export default async function VagaPage({ params }: VagaPageProps) {
   const { id } = await params;
-  const vaga = await buscarVagaPorId(id);
+  const [vaga, totalCandidaturas] = await Promise.all([
+    buscarVagaPorId(id),
+    contarCandidaturas(id),
+  ]);
 
   if (!vaga) {
     notFound();
   }
-
-  const totalCandidaturas = await prisma.candidatura.count({
-    where: {vagaId: id},
-  });
 
   return (
     <article>
@@ -52,9 +50,6 @@ export default async function VagaPage({ params }: VagaPageProps) {
       </p>
       <p className="text-suave">
         <strong className="text-principal">{totalCandidaturas}</strong> candidatura(s)
-      </p>
-      <p>
-        <strong>Candidaturas:</strong> {totalCandidaturas}
       </p>
 
       {vaga.aceitaIniciante && (

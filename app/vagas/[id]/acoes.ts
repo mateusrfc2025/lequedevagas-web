@@ -1,72 +1,43 @@
 "use server";
 
+import { updateTag } from "next/cache";
+import { guardarCandidatura } from "@/lib/api";
 import { EsquemaDaCandidatura } from "@/lib/esquemas";
 import { porCampo, valoresDe } from "@/lib/formulario";
-import { buscarVagaPorId, guardarCandidatura } from "@/lib/api";
-import { prisma } from "@/lib/prisma";
+import { podeCandidatar } from "@/lib/permissoes";
+import { usuarioAtual } from "@/lib/sessao";
 import type { Estado } from "@/lib/tipos";
-import { auth } from "@/auth";
 
-export async function enviarCandidatura(
-  estadoAnterior: Estado,
-  dados: FormData,
-): Promise<Estado> {
-  const sessao = await auth();
+export async function enviarCandidatura(estadoAnterior: Estado, dados: FormData): Promise<Estado> {
   const valores = valoresDe(dados);
 
-  if(!sessao?.user?.id){
-    return{
-      ok: false,
-      erros: {
-        geral:  "Você precisa estar logado para se candidatar."
-      },
-      valores,
-    };
+  const quem = await usuarioAtual();
+  if (!podeCandidatar(quem)) {
+    return { ok: false, erros: {}, valores, mensagem: "Entre como candidata para se candidatar." };
   }
 
-  const analise = EsquemaDaCandidatura.safeParse(Object.fromEntries(dados));
+  // As habilidades são lista: getAll, e não Object.fromEntries (aula 05).
+  const analise = EsquemaDaCandidatura.safeParse({
+    vagaId: dados.get("vagaId"),
+    habilidades: dados.getAll("habilidades").map(String),
+  });
   if (!analise.success) {
     return { ok: false, erros: porCampo(analise.error), valores };
   }
 
-  // lista: Object.fromEntries só guarda o último valor, por isso getAll
-  const habilidades = dados.getAll("habilidades").map(String);
-  if (habilidades.length === 0) {
-    return {
-      ok: false,
-      erros: { habilidades: "Adicione pelo menos uma habilidade." },
-      valores,
-    };
+  /* Nome e e-mail vêm da CONTA (aula 07), e o pessoaId liga a candidatura a
+     ela. A checagem "a vaga existe?" da aula 06 sai: quem confere é a API, e
+     responde 404 (vaga que não existe), ou 409 (arquivada, ou repetida). */
+  const gravou = await guardarCandidatura(analise.data.vagaId, {
+    nome: quem.nome,
+    email: quem.email,
+    habilidades: analise.data.habilidades,
+    pessoaId: quem.id,
+  });
+  if (!gravou.ok) {
+    return { ok: false, erros: gravou.erros, valores, mensagem: gravou.mensagem };
   }
 
-  const vaga = await buscarVagaPorId(analise.data.vagaId);
-  if (!vaga) {
-    return {
-      ok: false,
-      erros: {},
-      valores,
-      mensagem: "Essa vaga não existe mais." };
-  }
-
-  try {
-    await prisma.candidatura.create({
-      data: {
-        nome: sessao.user.name || "Usuário",
-        email: sessao.user.email || "",
-        pessoaId: sessao.user.id,
-        vagaId: analise.data.vagaId,
-      }
-    });
-
-    return { ok: true, erros: {}, valores, mensagem: "Candidatura enviada!"};
-
-  } catch (erro: any) {
-    return {
-      ok: false,
-      erros: {
-        geral: "Ocorreu um erro inesperado ao salvar sua candidatura."
-      },
-      valores,
-    };
-  }
+  updateTag("candidaturas");
+  return { ok: true, erros: {}, valores: {}, mensagem: "Candidatura enviada!" };
 }

@@ -52,8 +52,13 @@ export const EstadoInicial: Estado = { ok: false, erros: {}, valores: {} };
 export type Candidatura = {
   id: string;
   vagaId: string;
+  pessoaId: string | null;
   nome: string;
   email: string;
   habilidades: string[];
   enviadaEm: string;
+};
+
+export type CandidaturaComVaga = Candidatura & {
+  vaga: { id: string; titulo: string; empresa: string } | null;
 };

@@ -3,11 +3,11 @@
 import { useActionState } from "react";
 import BotaoDeEnviar from "@/components/BotaoDeEnviar";
 import Campo from "@/components/ui/Campo";
-import { criarConta } from "./acoes";
+import { cadastrar } from "./acoes";
 import { EstadoInicial } from "@/lib/tipos";
 
 export default function FormularioDeCadastro() {
-  const [estado, acaoDoForm] = useActionState(criarConta, EstadoInicial);
+  const [estado, acaoDoForm] = useActionState(cadastrar, EstadoInicial);
 
   return (
     <form className="formulario" action={acaoDoForm}>

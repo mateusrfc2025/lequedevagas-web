@@ -25,3 +25,6 @@ export function podeArquivar(
   );
 }
 
+export function podeCandidatar(quem: Quem | null): quem is Quem {
+  return quem?.papel === "candidata";
+}

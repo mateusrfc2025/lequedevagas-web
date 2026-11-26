@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { usuarioAtual, type Quem } from "@/lib/sessao";
-import { buscarEmpresa, listarVagasDoAutor } from "@/lib/api";
+import { buscarEmpresa, listarCandidaturasDe, listarVagasDoAutor } from "@/lib/api";
 import BotaoDeEnviar from "@/components/BotaoDeEnviar";
 import { sair } from "./acoes";
 import { arquivar } from "@/app/vagas/acoes";
@@ -23,7 +23,7 @@ export default async function Painel() {
       {quem.papel === "empresa" ? (
         <PainelDaEmpresa quem={quem} />
       ) : (
-        <PainelDaCandidata />
+        <PainelDaCandidata quem={quem} />
       )}
 
       <form action={sair} className="mt-8">
@@ -86,13 +86,41 @@ async function PainelDaEmpresa({ quem }: { quem: Quem }) {
   );
 }
 
-function PainelDaCandidata() {
+async function PainelDaCandidata({ quem }: { quem: Quem }) {
+  const candidaturas = await listarCandidaturasDe(quem.id);
+
   return (
     <>
       <h2>Suas candidaturas</h2>
-      <p>
-        Em breve. <Link href="/vagas">Ver as vagas</Link>
-      </p>
+      {candidaturas.length === 0 ? (
+        <p>
+          Você ainda não se candidatou a nenhuma vaga.{" "}
+          <Link href="/vagas">Ver as vagas</Link>
+        </p>
+      ) : (
+        <ul className="grid gap-3">
+          {candidaturas.map((c) => (
+            <li key={c.id} className={CARTAO}>
+              {c.vaga ? (
+                <Link href={`/vagas/${c.vaga.id}`} className={LINK_DO_CARTAO}>
+                  <span className="font-semibold">{c.vaga.titulo}</span>
+                  <span className="block text-sm text-suave">
+                    {c.vaga.empresa} · enviada em{" "}
+                    {new Date(c.enviadaEm).toLocaleDateString("pt-BR")}
+                  </span>
+                </Link>
+              ) : (
+                <div className={LINK_DO_CARTAO}>
+                  <span className="font-semibold">Vaga indisponível</span>
+                  <span className="block text-sm text-suave">
+                    enviada em {new Date(c.enviadaEm).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </>
   );
 }

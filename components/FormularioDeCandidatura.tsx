@@ -68,7 +68,11 @@ export default function FormularioDeCandidatura({
         </p>
       )}
 
+      {estado.erros?.email && <p className="erro">{estado.erros.email}</p>}
       {estado.erros?.geral && <p className="erro">{estado.erros.geral}</p>}
+      {!estado.erros?.email && estado.mensagem && (
+        <p className="erro">{estado.mensagem}</p>
+      )}
 
       <BotaoDeEnviar>Enviar candidatura</BotaoDeEnviar>
     </form>

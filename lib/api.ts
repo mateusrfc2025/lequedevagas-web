@@ -1,10 +1,9 @@
-import type { Vaga, VagaNova, Empresa, Pessoa, Candidatura } from "./tipos";
+import type { Vaga, VagaNova, Empresa, Pessoa, Candidatura, CandidaturaComVaga } from "./tipos";
 
 // Não é segredo e é igual em todo ambiente: por isso não vai pro .env.
 const API =
   "https://aulas.umlequedetecnologia.com.br/api/leque-de-vagas/equipe/lequedevagas-web";
 
-const candidaturasCriadasEmMemoria: Candidatura[] = [];
 
 // ─── AJUDANTES ───
 
@@ -104,9 +103,27 @@ export async function arquivarVaga(id: string) {
   return gravar<Vaga>("PATCH", `/vagas/${encodeURIComponent(id)}`, { arquivada: true });
 }
 
-// ─── AINDA NÃO MIGRADA (frente 3: não mexa) ───
+// ─── FRENTE 3 · PESSOAS E CANDIDATURAS ───
 
-export async function guardarCandidatura(candidatura: Candidatura) {
-  candidaturasCriadasEmMemoria.unshift(candidatura);
-  return candidatura;
+/** A senha vai em texto, por HTTPS, e quem faz o hash é a API. O papel não vai: sem ele, a conta nasce candidata. */
+export async function guardarPessoa(pessoa: { nome: string; email: string; senha: string }) {
+  return gravar<Pessoa>("POST", "/pessoas", pessoa);
+}
+
+export async function guardarCandidatura(
+  vagaId: string,
+  candidatura: { nome: string; email: string; habilidades: string[]; pessoaId: string },
+) {
+  return gravar<Candidatura>("POST", `/vagas/${encodeURIComponent(vagaId)}/candidaturas`, candidatura);
+}
+
+/** As candidaturas de UMA pessoa, cada uma com o título e a empresa da vaga. */
+export async function listarCandidaturasDe(pessoaId: string): Promise<CandidaturaComVaga[]> {
+  return (await ler<CandidaturaComVaga[]>(`/pessoas/${encodeURIComponent(pessoaId)}/candidaturas`, "candidaturas")) ?? [];
+}
+
+/** Quantas candidaturas uma vaga tem. */
+export async function contarCandidaturas(vagaId: string): Promise<number> {
+  const lista = await ler<Candidatura[]>(`/vagas/${encodeURIComponent(vagaId)}/candidaturas`, "candidaturas");
+  return lista?.length ?? 0;
 }

@@ -1,36 +1,27 @@
 
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
+import { arquivarVaga, buscarVagaPorId } from "@/lib/api";
 import { EsquemaDeArquivar } from "@/lib/esquemas";
-import { arquivarVaga } from "@/lib/api";
-import { usuarioAtual } from "@/lib/sessao";
-import { prisma } from "@/lib/prisma";
 import { podeArquivar } from "@/lib/permissoes";
+import { usuarioAtual } from "@/lib/sessao";
 
-// Sem useActionState: não tem erro para mostrar, então recebe só o FormData.
 export async function arquivar(dados: FormData) {
   const analise = EsquemaDeArquivar.safeParse(Object.fromEntries(dados));
   if (!analise.success) return;
 
-  const quem = await usuarioAtual();
-  if (!quem) return;
-
-  // Busca o verdadeiro autor da vaga no banco, sem confiar no ID enviado pelo formulário.
-  const vaga = await prisma.vaga.findUnique({
-    where: { id: analise.data.id },
-    select: { autorId: true },
-  });
+  // Busca o usuário logado e a vaga diretamente na API.
+  const [quem, vaga] = await Promise.all([
+    usuarioAtual(),
+    buscarVagaPorId(analise.data.id),
+  ]);
 
   // Só permite arquivar se a vaga pertencer à pessoa logada.
-  if (!podeArquivar(quem, vaga)) return;
+  if (!vaga || !podeArquivar(quem, vaga)) return;
 
-  await arquivarVaga(analise.data.id);
+  await arquivarVaga(vaga.id);
 
-  // revalidatePath, e não revalidateTag: a lista de arquivadas vive na
-  // MEMÓRIA, não num fetch. O tag só mandaria buscar o JSON de novo (que
-  // volta igual). O que precisa ser refeito é a renderização da rota.
-  revalidatePath("/vagas");
-  revalidatePath("/");
-  revalidatePath("/painel");
+  // Atualiza os números e as listas que usam a etiqueta "vagas".
+  updateTag("vagas");
 }

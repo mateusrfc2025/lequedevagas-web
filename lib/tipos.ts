@@ -62,3 +62,11 @@ export type Candidatura = {
 export type CandidaturaComVaga = Candidatura & {
   vaga: { id: string; titulo: string; empresa: string } | null;
 };
+
+export type Numeros = {
+  total: number;
+  aceitamIniciante: number;
+  arquivadas: number;
+  porArea: Record<string, number>;
+  porSenioridade: Record<string, number>;
+};

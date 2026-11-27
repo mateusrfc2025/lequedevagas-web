@@ -1,15 +1,13 @@
 
-import { listarVagas } from "@/lib/api";
+import { buscarNumeros } from "@/lib/api";
 
-// Componente de SERVIDOR que busca por conta própria.
 export default async function NumerosDoCatalogo() {
-  const vagas = await listarVagas();
-  const iniciantes = vagas.filter((v) => v.aceitaIniciante).length;
+  // A API devolve os números prontos, sem trazer todas as vagas.
+  const numeros = await buscarNumeros();
 
   return (
-    <p className="text-suave" style={{ minHeight: 24 }}>
-      <strong>{vagas.length}</strong> vagas · <strong>{iniciantes}</strong>{" "}
-      aceitam quem está começando
+    <p className="numeros">
+      {numeros.total} vagas abertas · {numeros.aceitamIniciante} aceitam quem está começando
     </p>
   );
 }
